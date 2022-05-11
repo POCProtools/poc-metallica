@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -137,6 +138,53 @@ class CommandTests {
 		});
 		assert result.size() == nbCommand;
 		assert b.get() == nbCommand;
+	}
+
+	@Test
+	void testConcurrentLimit() throws Throwable {
+		Set<String> result = new HashSet<String>();
+		AtomicInteger b = new AtomicInteger(0);
+		AtomicInteger c = new AtomicInteger(0);
+		
+		AtomicInteger concurrent = new AtomicInteger(0);
+		AtomicInteger maxConcurrent = new AtomicInteger(0);
+		
+		commandEngine.registerProcessor("test-concurrent-limit", (command) -> {
+			var currentConcurrency = concurrent.incrementAndGet();
+			if (currentConcurrency > maxConcurrent.get()) {
+				maxConcurrent.set(currentConcurrency);
+			}
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			concurrent.decrementAndGet();
+			return b.incrementAndGet();
+		});
+		int nbCommand = 5;
+		
+		commandService.subscribe((command, body) -> {
+			System.out.println(c.incrementAndGet());
+			result.add(command.getPayload());
+		}, Type.Done, Type.Error);
+		
+		String limitKey = "testLimit-" + RandomStringUtils.random(5);
+		
+		for (int i = 0; i < nbCommand; i++) {
+			commandService.createCommand("test-concurrent-limit")
+				.payload(Map.of("username", "jean" + i))
+				.saveAndSendWithLimit(2, limitKey);
+		}
+		assert waitFor(100, () -> {
+			System.out.println(result.size());
+			System.out.println(b.get());
+			return result.size() >= nbCommand;
+		});
+		assert result.size() == nbCommand;
+		assert b.get() == nbCommand;
+		assert maxConcurrent.get() == 2;
 	}
 	
 	private boolean waitFor(int timeMax, Supplier<Boolean> b) {

@@ -21,6 +21,10 @@ public class StepDescriptor {
 	
 	private StepDescriptor nextStep;
 
+	private int limit;
+	
+	private String limitKey;
+
 	public UUID getId() {
 		return id;
 	}
@@ -51,6 +55,14 @@ public class StepDescriptor {
 	
 	public String getPayloadTemplate() {
 		return payloadTemplate;
+	}
+	
+	public int getLimit() {
+		return limit;
+	}
+
+	public String getLimitKey() {
+		return limitKey;
 	}
 
 	private StepDescriptor() {
@@ -106,6 +118,15 @@ public class StepDescriptor {
 			return this;
 		}
 		
+		public Builder limit(int limit) {
+			descriptor.limit = limit;
+			return this;
+		}
+
+		public Builder limitKey(String limitKey) {
+			descriptor.limitKey = limitKey;
+			return this;
+		}
 		public Builder nextStep() {
 			workflowBuilder.endStep(descriptor);
 			var builder = new StepDescriptor.Builder(workflowBuilder);
@@ -117,5 +138,6 @@ public class StepDescriptor {
 			workflowBuilder.endStep(descriptor);
 			return workflowBuilder.build();
 		}
+
 	}
 }

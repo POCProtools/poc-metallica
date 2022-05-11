@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import fr.insee.metallica.pocprotools.domain.Workflow;
+import fr.insee.metallica.pocprotools.service.WorkflowConfigurationService;
 import fr.insee.metallica.pocprotools.service.WorkflowEngine;
 
 @RestController
@@ -39,10 +40,13 @@ public class StartWorkflowController {
 	@Autowired
 	private WorkflowEngine workflowEngine;
 	
+	@Autowired
+	private WorkflowConfigurationService workflowConfigurationService;
+	
 	@PostMapping(path = "/start-workflow")
 	public CompletableFuture<String> startWorkflow(@Valid @RequestBody UsernameDto dto) {
 		try {
-			return workflowEngine.startWorkflowAndWait(Workflows.GeneratePasswordAndSendMail, dto)
+			return workflowEngine.startWorkflowAndWait(workflowConfigurationService.getWorkflow("GeneratePasswordAndSendMail"), dto)
 			.thenApply((result) -> "Message Sent for user " +  dto.getUsername());
 		} catch (JsonProcessingException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Could not serialize the Dto");

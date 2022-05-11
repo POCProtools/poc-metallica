@@ -55,7 +55,7 @@ public class CommandService {
 	}
 	
 	public Command aquireToProcess(UUID commandId) {
-		if (commandRepository.setStatus(commandId, Status.Pending, Status.Processing) == 0) {
+		if (commandRepository.setStatus(commandId, List.of(Status.Pending, Status.Retry), Status.Processing) == 0) {
 			return null;
 		}
 
@@ -186,6 +186,20 @@ public class CommandService {
 
 		public Command saveAndSend() {
 			c.setStatus(Status.Pending);
+			if (c.getNextScheduledTime() == null)
+				c.setNextScheduledTime(LocalDateTime.now());
+			
+			return transactionTemplate.execute((status) -> {
+				c = commandRepository.save(c);
+				publish(Type.Added,c, null);
+				return c;
+			});
+		}
+
+		public Command saveAndSendWithLimit(int limit, String limitKey) {
+			c.setStatus(Status.Pending);
+			c.setConcurrencyLimit(limit);
+			c.setLimitKey(limitKey);
 			if (c.getNextScheduledTime() == null)
 				c.setNextScheduledTime(LocalDateTime.now());
 			

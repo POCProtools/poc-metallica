@@ -39,6 +39,9 @@ public class WorkflowService {
 	private final Map<UUID, List<WorkflowEventListener>> listeners = new HashMap<>();
 
 	public WorkflowContext getMetadatas(Command command) throws JsonProcessingException {
+		if (command.getContext() == null) {
+			return null;
+		}
 		return mapper.readValue(command.getContext(), WorkflowContext.class);
 	}
 

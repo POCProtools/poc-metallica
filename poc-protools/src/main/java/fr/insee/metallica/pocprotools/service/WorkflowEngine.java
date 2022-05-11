@@ -51,6 +51,10 @@ public class WorkflowEngine {
 			// this is in the command transaction
 			try {
 				var metadata = workflowService.getMetadatas(command);
+				if (metadata == null) {
+					// this is not a command from a workflow we should not process it
+					return;
+				}
 				var step = workflowStepRepository.findById(metadata.getStepId()).orElseThrow();
 				
 				var workflowDescriptor = Workflows.Workflows.get(step.getWorkflow().getWorkflowId());
@@ -140,6 +144,6 @@ public class WorkflowEngine {
 					step.getWorkflow().getId(),
 					step.getId()
 				)
-			).saveAndSend();
+			).saveAndSendWithLimit(stepDescriptor.getLimit(), stepDescriptor.getLimitKey());
 	}
 }

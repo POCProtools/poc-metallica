@@ -10,7 +10,6 @@ public class HttpPayload {
 	private Map<String, String> headers;
 	private HttpMethod method;
 	private Object body;
-	String url;
 
 	public Object getBody() {
 		return body;
@@ -30,11 +29,4 @@ public class HttpPayload {
 	public void setHeaders(Map<String, String> headers) {
 		this.headers = headers;
 	}
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String url) {
-		this.url = url;
-	}
-	
 }

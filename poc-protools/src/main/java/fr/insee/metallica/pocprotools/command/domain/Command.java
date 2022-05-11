@@ -8,11 +8,14 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
+@Table(indexes = {@Index(columnList = "status"), @Index(columnList = "nextScheduledTime"), @Index(columnList = "limitKey")})
 public class Command {
 	public static enum Status {
 		Pending, Processing, Done, Error, Retry
@@ -44,6 +47,10 @@ public class Command {
 	
 	@Type(type = "text")
 	private String result;
+	
+	private int concurrencyLimit;
+	
+	private String limitKey;
 	
 	public UUID getId() {
 		return id;
@@ -120,5 +127,20 @@ public class Command {
 	public void setLastHeartBeat(LocalDateTime lastHeartBeat) {
 		this.lastHeartBeat = lastHeartBeat;
 	}
-	
+
+	public int getConcurrencyLimit() {
+		return concurrencyLimit;
+	}
+
+	public void setConcurrencyLimit(int concurrencyLimit) {
+		this.concurrencyLimit = concurrencyLimit;
+	}
+
+	public String getLimitKey() {
+		return limitKey;
+	}
+
+	public void setLimitKey(String limitKey) {
+		this.limitKey = limitKey;
+	}
 }

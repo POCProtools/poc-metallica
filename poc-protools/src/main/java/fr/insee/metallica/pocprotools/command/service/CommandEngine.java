@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import fr.insee.metallica.pocprotools.command.domain.Command;
 import fr.insee.metallica.pocprotools.command.domain.Command.Status;
 import fr.insee.metallica.pocprotools.command.exception.CommandExecutionAbortException;
 import fr.insee.metallica.pocprotools.command.exception.CommandExecutionRetryException;
@@ -37,6 +39,9 @@ public class CommandEngine {
 	
 	@Value("${command.schedule.timeWithoutHeartBeatBeforeDeath:15}")
 	private int timeWithoutHeartBeatBeforeDeath;
+	
+	@Value("${command.schedule.delayHeartBeat:5}")
+	private int delayHeartBeat;
 
 	@Autowired
 	private CommandService commandService;
@@ -97,6 +102,10 @@ public class CommandEngine {
 				synchronized (currentCommands) {
 					currentCommands.add(command.getId());
 				}
+				if (limitReached(command)) {
+					rescheduleIfProcessing(commandId);
+					return;
+				}
 				var processor = processors.get(command.getType());
 				if (processor == null) throw new CommandExecutionAbortException("Processor for " + command.getType() + " not found");
 				
@@ -124,10 +133,25 @@ public class CommandEngine {
 		}
 	}
 	
+	private boolean limitReached(Command command) {
+		if (command.getConcurrencyLimit() <= 0) return false;
+		
+		return commandRepository.countByLimitKeyAndStatus(command.getLimitKey(), Status.Processing) > command.getConcurrencyLimit();
+	}
+
 	@PreDestroy
+	@Transactional
 	public void destroy() throws InterruptedException {
 		executorService.shutdown();
 		executorService.awaitTermination(5, TimeUnit.SECONDS);
+		
+		for (var c : currentCommands) {
+			rescheduleIfProcessing(c);
+		}
+	}
+
+	private void rescheduleIfProcessing(UUID commandId) {
+		commandRepository.reschedule(commandId, Status.Processing, Status.Retry, LocalDateTime.now().plusSeconds(delayHeartBeat));
 	}
 
 	public void registerProcessor(String commandType, CommandProcessor processor) {

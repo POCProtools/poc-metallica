@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocprotools.command.processor;
+package fr.insee.metallica.pocprotools.command.processor.http;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,7 +13,6 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,24 +21,26 @@ import fr.insee.metallica.pocprotools.command.domain.Command;
 import fr.insee.metallica.pocprotools.command.exception.CommandExecutionAbortException;
 import fr.insee.metallica.pocprotools.command.exception.CommandExecutionException;
 import fr.insee.metallica.pocprotools.command.exception.CommandExecutionRetryException;
+import fr.insee.metallica.pocprotools.command.processor.TypedAbstractCommandProcessor;
 import fr.insee.metallica.pocprotools.command.processor.payload.HttpPayload;
 
-@Service
-public class HttpCommandProcessor extends TypedAbstractCommandProcessor<HttpPayload> {
-	public HttpCommandProcessor() {
-		super(Processors.Http, HttpPayload.class);
+public abstract class AbstractHttpCommandProcessor<T extends HttpPayload> extends TypedAbstractCommandProcessor<T> {
+	public AbstractHttpCommandProcessor(String commandType, Class<T> payloadType) {
+		super(commandType, payloadType);
 	}
+	
+	abstract protected String getUrl(Command command, T payload);
 	
 	@Autowired
 	private ObjectMapper mapper;
 	
 	@Override
-	public Object process(Command command, HttpPayload payload) throws CommandExecutionException {
+	public Object process(Command command, T payload) throws CommandExecutionException {
 		try {
 			HttpClient client = HttpClient.newHttpClient();
 			Builder builder = HttpRequest
 				.newBuilder()
-				.uri(URI.create(payload.getUrl()))
+				.uri(URI.create(getUrl(command, payload)))
 				.POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(payload.getBody())))
 				.header("COMMAND", command.getId().toString())
 				.header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
