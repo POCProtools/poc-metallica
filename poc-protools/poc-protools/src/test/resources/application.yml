@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:protools?DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate.ddl-auto: update
+    
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+      protools:
+        connectTimeout: 20000
+        readTimeout: 20000
+        loggerLevel: basic
+               
+
+env:
+  urls:
+    password-generator: ${PASSWORD_GENERATOR:http://localhost:8081}
+    send-mail: ${PASSWORD_MAIL_SENDER:http://localhost:8082}
+    protools: http://localhost:8083
+  
+files:
+  mail-sender-files: ../runtime/password-mail-sender/mail-body.log
+  
+command.schedule:
+  delayHeartBeat: 1
+  delayBeetweenRetryCheck: 1
+  delayBeetweenDeadCheck: 5
+  timeWithoutHeartBeatBeforeDeath: 5
