@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:file:${DATA_FOLDER:~/target}/password-generator
+    url: jdbc:h2:file:${DATA_FOLDER:./target}/password-generator
     driverClassName: org.h2.Driver
     username: sa
     password: password

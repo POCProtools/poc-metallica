@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:protools
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate.ddl-auto: update
+
+server.port: 18181
+
+command:
+  schedule:
+    delayHeartBeat: 1
+    delayBeetweenRetryCheck: 1
+    delayBeetweenDeadCheck: 5
+    timeWithoutHeartBeatBeforeDeath: 5
+  services:
+    servicename: http://localhost:18181
