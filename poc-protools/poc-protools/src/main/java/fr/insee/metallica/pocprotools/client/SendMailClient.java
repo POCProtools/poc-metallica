@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import feign.FeignException;
 
-@FeignClient(value = "send-mail", url = "${env.urls.send-mail}")
+@FeignClient(value = "send-mail", url = "${command.services.send-mail}")
 public interface SendMailClient {
     @PostMapping("/send-mail")
     ObjectNode sendMail(@RequestBody ObjectNode context) throws FeignException;

@@ -11,7 +11,7 @@ RUN mvn package -Dspring-boot.repackage.skip=true
 COPY ./poc-protools/src /pwd/poc-protools/src
 COPY ./poc-protools-command/src /pwd/poc-protools-command/src
 
-RUN mvn package
+RUN mvn package -DskipTests=true
 
 FROM openjdk:11-jre-slim
 

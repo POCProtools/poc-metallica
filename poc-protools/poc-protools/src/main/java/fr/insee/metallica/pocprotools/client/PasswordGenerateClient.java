@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import feign.FeignException;
 
-@FeignClient(value = "password-generator", url = "${env.urls.password-generator}")
+@FeignClient(value = "password-generator", url = "${command.services.password-generator}")
 public interface PasswordGenerateClient {
     @PostMapping(value = "/generate-password")
     ObjectNode generatePassword(@RequestBody ObjectNode context) throws FeignException;

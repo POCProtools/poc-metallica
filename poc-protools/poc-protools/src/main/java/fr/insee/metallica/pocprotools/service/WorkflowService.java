@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fr.insee.metallica.pocprotools.controller.StepDescriptor;
 import fr.insee.metallica.pocprotools.controller.WorkflowDescriptor;
-import fr.insee.metallica.pocprotools.controller.Workflows;
 import fr.insee.metallica.pocprotools.domain.Workflow;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep.Status;
@@ -32,6 +31,9 @@ public class WorkflowService {
 	
 	@Autowired
 	private WorkflowRepository workflowRepository;
+	
+	@Autowired
+	private WorkflowConfigurationService workflowConfigurationService;
 	
 	@Autowired
 	private WorkflowStepRepository workflowStepRepository;
@@ -77,7 +79,7 @@ public class WorkflowService {
 	}
 	
 	public WorkflowDescriptor getWorkflowDescriptor(Workflow workflow) {
-		return Workflows.Workflows.get(workflow.getWorkflowId());
+		return workflowConfigurationService.getWorkflow(workflow.getWorkflowId());
 	}
 	
 	public StepDescriptor getStepDescriptor(WorkflowStep step) {

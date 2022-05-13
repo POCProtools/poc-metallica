@@ -2,6 +2,8 @@ package fr.insee.metallica.pocprotools.service;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -16,6 +18,7 @@ import fr.insee.metallica.pocprotools.controller.WorkflowDescriptor;
 @Service
 public class WorkflowConfigurationService {
 	private Map<String, WorkflowDescriptor> workflows;
+	private Map<UUID, WorkflowDescriptor> workflowsByUuid;
 	
 	@PostConstruct
 	public void initialize() throws IOException {
@@ -23,10 +26,20 @@ public class WorkflowConfigurationService {
 		try(var stream = getClass().getResourceAsStream("/workflows.yaml")) {
 			var workflows = mapper .readValue(stream, WorkflowsProperties.class);
 			this.workflows = workflows.toWorkflowDescriptors();
+			this.workflowsByUuid = this.workflows.values().stream().collect(Collectors.toMap(WorkflowDescriptor::getId, w -> w));
 		}
 	}
 	
 	public WorkflowDescriptor getWorkflow(String name) {
 		return workflows.get(name);
+	}
+	
+	public WorkflowDescriptor getWorkflow(UUID uuid) {
+		return workflowsByUuid.get(uuid);
+	}
+	
+	public void addWorkflow(String key, WorkflowDescriptor desc) {
+		workflows.put(key, desc);
+		workflowsByUuid.put(desc.getId(), desc);
 	}
 }

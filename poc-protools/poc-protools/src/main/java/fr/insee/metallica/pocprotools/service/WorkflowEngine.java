@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import fr.insee.metallica.pocprotools.controller.StepDescriptor;
 import fr.insee.metallica.pocprotools.controller.WorkflowDescriptor;
-import fr.insee.metallica.pocprotools.controller.Workflows;
 import fr.insee.metallica.pocprotools.domain.Workflow;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep.Status;
@@ -45,6 +44,9 @@ public class WorkflowEngine {
 	@Autowired
 	private WorkflowService workflowService;
 	
+	@Autowired
+	private WorkflowConfigurationService workflowConfigurationService;
+	
 	@PostConstruct
 	public void init() {
 		commandService.subscribe((command, body) -> {
@@ -57,7 +59,7 @@ public class WorkflowEngine {
 				}
 				var step = workflowStepRepository.findById(metadata.getStepId()).orElseThrow();
 				
-				var workflowDescriptor = Workflows.Workflows.get(step.getWorkflow().getWorkflowId());
+				var workflowDescriptor = workflowConfigurationService.getWorkflow(step.getWorkflow().getWorkflowId());
 				var stepDescriptor = workflowDescriptor.getStep(step.getStepId());
 				
 				if (command.getStatus() == Command.Status.Error) {
@@ -83,27 +85,37 @@ public class WorkflowEngine {
 		}, Type.Done, Type.Error, Type.Retry, Type.Aquired );
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Transactional
-	public CompletableFuture<Object> startWorkflowAndWait(WorkflowDescriptor descriptor, Object context) throws JsonProcessingException {
-		var workflow = workflowService.createWorkflow(descriptor, context);
-		var step = workflowService.createStep(workflow, descriptor.getInitialStep());
-		var future = new CompletableFuture<>();
+	public <T> CompletableFuture<T> startWorkflowAndWait(String workflowName, Object context) {
+		var result = new CompletableFuture<T>();
 		
-		workflowService.subscribe(workflow.getId(), (finalWorkflow, finalStep, result) -> {
-			if (finalWorkflow.getStatus() == Workflow.Status.Error) {
-				future.completeExceptionally(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Step : " + workflowService.getStepDescriptor(finalStep).getLabel()));
-			} else if (finalWorkflow.getStatus() == Workflow.Status.Success) {
-				future.completeAsync(() -> result);
-			}
-		});
-		
-		startStep(step);
-		return future;
+		try {
+			var descriptor = workflowConfigurationService.getWorkflow(workflowName);
+			var workflow = workflowService.createWorkflow(descriptor, context);
+			var step = workflowService.createStep(workflow, descriptor.getInitialStep());
+			
+			workflowService.subscribe(workflow.getId(), (finalWorkflow, finalStep, workflowResult) -> {
+				if (finalWorkflow.getStatus() == Workflow.Status.Error) {
+					result.completeExceptionally(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Step : " + workflowService.getStepDescriptor(finalStep).getLabel()));
+				} else if (finalWorkflow.getStatus() == Workflow.Status.Success) {
+					result.completeAsync(() -> (T) result);
+				}
+			});
+			
+			startStep(step);
+		} catch (JsonProcessingException e) {
+			result.completeExceptionally(e);
+			return result;
+		}
+		return result;
 	}
 	
 	@Transactional
 	@Async
-	public Future<Workflow> startWorkflow(WorkflowDescriptor descriptor, Object context) throws JsonProcessingException {
+	public Future<Workflow> startWorkflow(String workflowName, Object context) throws JsonProcessingException {
+		var descriptor = workflowConfigurationService.getWorkflow(workflowName);
+		
 		var workflow = workflowService.createWorkflow(descriptor, context);
 		var step = workflowService.createStep(workflow, descriptor.getInitialStep());
 		startStep(step);

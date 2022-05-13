@@ -1,13 +1,17 @@
 package fr.insee.metallica.pocprotools.controller;
 
-import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import fr.insee.metallica.pocprotools.service.WorkflowConfigurationService;
 import fr.insee.metallica.pocprotools.service.processor.EnrichContextProcessor;
 import fr.insee.metallica.pocprotoolscommand.processor.Processors;
 
+@Service
 public class Workflows {
-	static public final WorkflowDescriptor GeneratePasswordAndSendMail = WorkflowDescriptor.Builder()
+	static public final WorkflowDescriptor CodeConfigurationGeneratePasswordAndSendMail = WorkflowDescriptor.Builder()
 			.id(UUID.fromString("eafa3d1b-644b-47dc-b803-074f08f01e2a"))
 			.addStep()
 				.label("generate password")
@@ -44,7 +48,8 @@ public class Workflows {
 				).finalStep()
 			.build();
 	
-	static public Map<UUID, WorkflowDescriptor> Workflows = Map.of(
-			GeneratePasswordAndSendMail.getId(), GeneratePasswordAndSendMail
-	);
+	@Autowired
+	private void workflowConfigurationService(WorkflowConfigurationService workflowConfigurationService) {
+		workflowConfigurationService.addWorkflow("CodeConfigurationGeneratePasswordAndSendMail", CodeConfigurationGeneratePasswordAndSendMail);
+	}
 }

@@ -5,15 +5,17 @@ workflows:
     id: "0f691401-2e9b-4673-ba48-b38dc55c8fb1"
     limit: 20
     limitKey: PasswordService
-    type: Http
+    type: ServiceHttp
     metadatas:
-      url: "${env.urls['password-generator']}/generate-password"
+      service: "password-generator"
+      path: "/generate-password"
       username: "${context.username}"
     payloadTemplate: |
       {
-        "url": "${metadatas.url}",
+        "path": "${metadatas.path}",
+        "service": "${metadatas.service}",
         "body": { "username": "${metadatas.username}" },
-        "method\": \"POST\"
+        "method": "POST"
       }
     
   - label: "Add generated to context"
@@ -26,15 +28,17 @@ workflows:
     
   - label: "generate password"
     id: "42f74465-baf2-4605-8e1e-b3141af0a446"
-    type: Http
+    type: ServiceHttp
     metadatas: 
-      url: "${env.urls['send-mail']}/send-mail"
+      service: "send-mail"
+      path: "/send-mail"
       username: "${context.username}"
       password: "${context.password}"
       method: "POST"
     payloadTemplate: |
       {
-       "url": "${metadatas.url}",
+       "path": "${metadatas.path}",
+       "service": "${metadatas.service}",
        "body": { "username": "${metadatas.username}", "password":"${metadatas.password}" },
        "method": "${metadatas.method}"
       }

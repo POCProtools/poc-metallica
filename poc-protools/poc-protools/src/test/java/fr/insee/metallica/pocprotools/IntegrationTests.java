@@ -12,7 +12,7 @@ import feign.FeignException;
 import fr.insee.metallica.pocprotools.controller.StartWorkflowController;
 
 @SpringBootTest
-@Disabled
+//@Disabled
 class IntegrationTests {
 	@Autowired
 	private ProtoolsClient protoolsClient;	

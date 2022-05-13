@@ -91,7 +91,7 @@ class IntegrationToMakeWorkTests {
 			if (i % 10 == 0)
 				Thread.sleep(10);
 		}
-		integrationTestHelper.waitForUsersInMail(50, users);
+		integrationTestHelper.waitForUsersInMail(60, users);
 		// check for duplicate
 		Thread.sleep(10000);
 		integrationTestHelper.waitForUsersInMail(10, users);

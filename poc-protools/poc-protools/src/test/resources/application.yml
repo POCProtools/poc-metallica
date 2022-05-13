@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:protools?DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:protools;DB_CLOSE_ON_EXIT=FALSE
     driverClassName: org.h2.Driver
     username: sa
     password: password
@@ -21,17 +21,16 @@ feign:
         loggerLevel: basic
                
 
-env:
-  urls:
+files:
+  mail-sender-files: ../../runtime/password-mail-sender/mail-body.log
+  
+command:
+  services:  
     password-generator: ${PASSWORD_GENERATOR:http://localhost:8081}
     send-mail: ${PASSWORD_MAIL_SENDER:http://localhost:8082}
     protools: http://localhost:8083
-  
-files:
-  mail-sender-files: ../runtime/password-mail-sender/mail-body.log
-  
-command.schedule:
-  delayHeartBeat: 1
-  delayBeetweenRetryCheck: 1
-  delayBeetweenDeadCheck: 5
-  timeWithoutHeartBeatBeforeDeath: 5
+  schedule:
+    delayHeartBeat: 1
+    delayBeetweenRetryCheck: 1
+    delayBeetweenDeadCheck: 5
+    timeWithoutHeartBeatBeforeDeath: 5

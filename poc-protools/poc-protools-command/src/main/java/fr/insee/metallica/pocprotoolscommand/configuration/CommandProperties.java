@@ -7,10 +7,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "command")
 public class CommandProperties {
 	public static class Schedule {
-	    int delayHeartBeat = 1;
-	    int delayBeetweenRetryCheck = 1;
+	    int delayHeartBeat = 4;
+	    int delayBeetweenRetryCheck = 3;
 	    int delayBeetweenDeadCheck = 5;
-	    int timeWithoutHeartBeatBeforeDeath = 55;
+	    int timeWithoutHeartBeatBeforeDeath = 20;
+
 		public int getDelayHeartBeat() {
 			return delayHeartBeat;
 		}
@@ -37,7 +38,7 @@ public class CommandProperties {
 		}
 	}
 
-	private Schedule schedule;
+	private Schedule schedule = new Schedule();
 	
 	private Map<String, String> services;
 
