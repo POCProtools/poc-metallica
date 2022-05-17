@@ -25,6 +25,8 @@ public class StepDescriptor {
 	
 	private String limitKey;
 
+	private StepDescriptor asyncResult;
+
 	public UUID getId() {
 		return id;
 	}
@@ -64,71 +66,50 @@ public class StepDescriptor {
 	public String getLimitKey() {
 		return limitKey;
 	}
+	
+	public StepDescriptor getAsyncResult() {
+		return asyncResult;
+	}
 
 	private StepDescriptor() {
 	}
 	
-	public static Builder Builder(WorkflowDescriptor.Builder workflowBuilder) {
-		return new Builder(workflowBuilder);
+	public static WorkflowStepBuilder Builder(WorkflowDescriptor.Builder workflowBuilder) {
+		return new WorkflowStepBuilder(workflowBuilder);
 	}
 	
-	public static class Builder {
-		private StepDescriptor descriptor;
+	public static class WorkflowStepBuilder extends StepBuilderBase<WorkflowStepBuilder> {
 		private WorkflowDescriptor.Builder workflowBuilder;
+		
+		@Override
+		protected WorkflowStepBuilder getThis() {
+			return this;
+		}
 
-		private Builder(WorkflowDescriptor.Builder workflowBuilder) {
-			this.descriptor = new StepDescriptor();
+		private WorkflowStepBuilder(WorkflowDescriptor.Builder workflowBuilder) {
 			this.workflowBuilder = workflowBuilder;
 		}
 		
-		public Builder id(UUID stepId) {
-			descriptor.id = stepId;
-			return this;
-		}
-		
-		public Builder label(String label) {
-			descriptor.label = label;
-			return this;
-		}
-		
-		public Builder payloadTemplate(String layoutTemplate) {
-			descriptor.payloadTemplate = layoutTemplate;
-			return this;
-		}
-		
-		public Builder type(String type) {
-			descriptor.type = type;
-			return this;
-		}
-		
-		public Builder addMetadatas(String key, Object value) {
-			if (descriptor.metadatas.put(key, value) != null) {
-				throw new RuntimeException("Cannot add multiple metadatas with the same key " + key);
-			}
-			return this;
-		}
-		
-		public Builder initialStep() {
-			descriptor.initialStep = true;
-			return this;
-		}
-		
-		public Builder finalStep() {
-			descriptor.finalStep = true;
-			return this;
-		}
-		
-		public Builder limit(String limitKey, int limit) {
-			descriptor.limit = limit;
-			descriptor.limitKey = limitKey;
-			return this;
-		}
-
-		public Builder nextStep() {
+		public WorkflowStepBuilder nextStep() {
 			workflowBuilder.endStep(descriptor);
-			var builder = new StepDescriptor.Builder(workflowBuilder);
+			var builder = new StepDescriptor.WorkflowStepBuilder(workflowBuilder);
 			this.descriptor.nextStep = builder.descriptor;
 			return builder;
+		}
+		
+		public WorkflowStepBuilder asyncResult(StepDescriptor stepDescriptor) {
+			descriptor.asyncResult = stepDescriptor;
+			return getThis();
+		}
+		
+		public WorkflowStepBuilder initialStep() {
+			descriptor.initialStep = true;
+			return getThis();
+		}
+		
+		public WorkflowStepBuilder finalStep() {
+			descriptor.finalStep = true;
+			return getThis();
 		}
 		
 		public WorkflowDescriptor build() {
@@ -136,5 +117,60 @@ public class StepDescriptor {
 			return workflowBuilder.build();
 		}
 
+	}
+	
+	public static class StepBuilder extends StepBuilderBase<StepBuilder> {
+		@Override
+		protected StepBuilder getThis() {
+			return this;
+		}
+		
+		public StepDescriptor build() {
+			return this.descriptor;
+		}
+	}
+	
+	public abstract static class StepBuilderBase<T extends StepBuilderContract<?>> implements StepBuilderContract<T> {
+		protected final StepDescriptor descriptor = new StepDescriptor();
+		protected abstract T getThis();
+		
+		@Override
+		public T id(UUID stepId) {
+			descriptor.id = stepId;
+			return getThis();
+		}
+		
+		@Override
+		public T label(String label) {
+			descriptor.label = label;
+			return getThis();
+		}
+		
+		@Override
+		public T payloadTemplate(String layoutTemplate) {
+			descriptor.payloadTemplate = layoutTemplate;
+			return getThis();
+		}
+		
+		@Override
+		public T type(String type) {
+			descriptor.type = type;
+			return getThis();
+		}
+		
+		@Override
+		public T addMetadatas(String key, Object value) {
+			if (descriptor.metadatas.put(key, value) != null) {
+				throw new RuntimeException("Cannot add multiple metadatas with the same key " + key);
+			}
+			return getThis();
+		}
+		
+		@Override
+		public T limit(String limitKey, int limit) {
+			descriptor.limit = limit;
+			descriptor.limitKey = limitKey;
+			return getThis();
+		}
 	}
 }

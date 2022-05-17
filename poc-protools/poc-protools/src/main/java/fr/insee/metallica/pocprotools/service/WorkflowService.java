@@ -5,7 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
+import javax.lang.model.UnknownEntityException;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fr.insee.metallica.pocprotools.controller.StepDescriptor;
 import fr.insee.metallica.pocprotools.controller.WorkflowDescriptor;
+import fr.insee.metallica.pocprotools.controller.WorkflowDto;
+import fr.insee.metallica.pocprotools.controller.WorkflowDto.StepDto;
 import fr.insee.metallica.pocprotools.domain.Workflow;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep;
 import fr.insee.metallica.pocprotools.domain.WorkflowStep.Status;
@@ -120,6 +125,28 @@ public class WorkflowService {
 	
 	public void publish(Workflow workflow, WorkflowStep step, Object result) {
 		listeners.getOrDefault(workflow.getId(), List.of()).forEach(l -> l.onEvent(workflow, step, result));
+	}
+
+	@Transactional
+	public WorkflowDto getStatus(UUID id) {
+		var workflow = workflowRepository.getById(id);
+		var desc = workflowConfigurationService.getWorkflow(workflow.getWorkflowId());
+		
+		var dto = new WorkflowDto();
+		dto.setId(workflow.getId());
+		dto.setStatus(workflow.getStatus());
+		dto.setName(desc.getName());
+		
+		var steps = workflowStepRepository.findByWorkflowId(id);
+		dto.setStep(steps.stream().map(s -> {
+			var stepDesc = desc.getStep(s.getStepId()); 
+			var step = new StepDto();
+			step.setId(s.getId());
+			step.setLabel(stepDesc.getLabel());
+			step.setStatus(s.getStatus());
+			return step;
+		}).collect(Collectors.toList()));
+		return dto;
 	}
 
 

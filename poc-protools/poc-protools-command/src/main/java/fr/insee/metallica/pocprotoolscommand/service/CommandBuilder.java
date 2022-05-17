@@ -23,7 +23,19 @@ public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 	}
 	
 	public Command saveAndSend() {
+		return saveAndSend(0, null);
+	}
+
+	public Command saveAndSend(int limit, String limitKey) {
+		return save(limit, limitKey, true);
+	}
+	
+	public Command save(int limit, String limitKey, boolean shouldSend) {
 		command.setStatus(Status.Pending);
+		if (limit > 0 && limitKey != null) {
+			command.setConcurrencyLimit(limit);
+			command.setLimitKey(limitKey);
+		}
 		if (command.getNextScheduledTime() == null)
 			command.setNextScheduledTime(LocalDateTime.now());
 		
@@ -33,21 +45,7 @@ public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 				this.commandService.commandRepository.save(asyncResult.command);
 				command.setResultFetcher(asyncResult.command);
 			}
-					
-			command = this.commandService.commandRepository.save(command);
-			this.commandService.publish(Type.Added,command, null);
-			return command;
-		});
-	}
-
-	public Command saveAndSendWithLimit(int limit, String limitKey) {
-		command.setStatus(Status.Pending);
-		command.setConcurrencyLimit(limit);
-		command.setLimitKey(limitKey);
-		if (command.getNextScheduledTime() == null)
-			command.setNextScheduledTime(LocalDateTime.now());
-		
-		return this.commandService.transactionTemplate.execute((status) -> {
+			
 			command = this.commandService.commandRepository.save(command);
 			this.commandService.publish(Type.Added,command, null);
 			return command;

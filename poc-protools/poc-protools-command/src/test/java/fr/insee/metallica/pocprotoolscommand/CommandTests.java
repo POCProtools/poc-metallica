@@ -259,7 +259,7 @@ class CommandTests {
 		for (int i = 0; i < nbCommand; i++) {
 			commandService.createCommand("test-concurrent-limit")
 				.payload(Map.of("username", "jean" + i))
-				.saveAndSendWithLimit(2, limitKey);
+				.saveAndSend(2, limitKey);
 		}
 		assert waitFor(100, () -> {
 			System.out.println(result.size());

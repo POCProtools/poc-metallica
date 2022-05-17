@@ -24,7 +24,7 @@ public class AsyncResultFetcherBuilder extends CommandBuilderBase<AsyncResultFet
 	}
 
 	public Command saveAndSendWithLimit(int limit, String limitKey) {
-		return parent.saveAndSendWithLimit(limit, limitKey);
+		return parent.saveAndSend(limit, limitKey);
 	}
 
 	public Command saveNoSend() {

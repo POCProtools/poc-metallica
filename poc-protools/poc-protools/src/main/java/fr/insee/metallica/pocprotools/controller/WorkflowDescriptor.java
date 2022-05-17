@@ -6,6 +6,8 @@ import java.util.UUID;
 public class WorkflowDescriptor {
 	private UUID id;
 	
+	private String name;
+	
 	private StepDescriptor initialStep;
 	
 	private StepDescriptor finalStep;
@@ -26,6 +28,10 @@ public class WorkflowDescriptor {
 
 	public StepDescriptor getStep(UUID stepId) {
 		return steps.get(stepId);
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 	private WorkflowDescriptor() {
@@ -53,8 +59,13 @@ public class WorkflowDescriptor {
 			descriptor.id = workflowId;
 			return this;
 		}
+		
+		public Builder name(String name) {
+			descriptor.name = name;
+			return this;
+		}
 
-		public StepDescriptor.Builder addStep() {
+		public StepDescriptor.WorkflowStepBuilder addStep() {
 			return StepDescriptor.Builder(this);
 		}
 		

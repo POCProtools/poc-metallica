@@ -57,10 +57,22 @@ public class WorkflowEngine {
 					// this is not a command from a workflow we should not process it
 					return;
 				}
-				var step = workflowStepRepository.findById(metadata.getStepId()).orElseThrow();
-				
+				var step = workflowStepRepository.findById(metadata.getStepId()).orElse(null);
+				if (step == null) {
+					// this may happend if this is a command to asynchronously fetch the result of a step
+					return;
+				}
+					
 				var workflowDescriptor = workflowConfigurationService.getWorkflow(step.getWorkflow().getWorkflowId());
+				if (workflowDescriptor == null) {
+					log.error("Workflow with id {} introuvable", step.getWorkflow().getWorkflowId());
+					return;
+				}
 				var stepDescriptor = workflowDescriptor.getStep(step.getStepId());
+				if (stepDescriptor == null) {
+					log.error("Step with id {} introuvable", step.getStepId());
+					return;
+				}
 				
 				if (command.getStatus() == Command.Status.Error) {
 					step.setStatus(Status.Error);
@@ -149,13 +161,28 @@ public class WorkflowEngine {
 		
 		var payload = simpleTemplateService.evaluateTemplate(stepDescriptor.getPayloadTemplate(), context, metadatas);
 		
-		commandService.createCommand(stepDescriptor.getType())
+		var command = commandService
+			.createCommand(stepDescriptor.getType())
 			.payload(payload)
 			.context(
 				new WorkflowContext(
 					step.getWorkflow().getId(),
 					step.getId()
 				)
-			).saveAndSendWithLimit(stepDescriptor.getLimit(), stepDescriptor.getLimitKey());
+			);
+		
+		if (stepDescriptor.getAsyncResult() != null) {
+			var asyncResult = stepDescriptor.getAsyncResult();
+			var asyncResultPayload = simpleTemplateService.evaluateTemplate(asyncResult.getPayloadTemplate(), context, metadatas);
+			command.asyncResult(asyncResult.getType())
+				.payload(asyncResultPayload)
+				.context(
+					new WorkflowContext(
+						step.getWorkflow().getId(),
+						asyncResult.getId()
+					)
+				);
+		}
+		command.saveAndSend(stepDescriptor.getLimit(), stepDescriptor.getLimitKey());
 	}
 }
