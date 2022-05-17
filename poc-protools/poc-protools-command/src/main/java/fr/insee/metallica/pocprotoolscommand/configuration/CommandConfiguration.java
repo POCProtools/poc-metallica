@@ -13,6 +13,7 @@ import fr.insee.metallica.pocprotoolscommand.processor.http.ServiceHttpCommandPr
 import fr.insee.metallica.pocprotoolscommand.processor.http.UrlHttpCommandProcessor;
 import fr.insee.metallica.pocprotoolscommand.repository.CommandRepository;
 import fr.insee.metallica.pocprotoolscommand.service.CommandEngine;
+import fr.insee.metallica.pocprotoolscommand.service.CommandScheduler;
 import fr.insee.metallica.pocprotoolscommand.service.CommandService;
 
 @EnableTransactionManagement
@@ -43,6 +44,11 @@ public class CommandConfiguration {
 	@Bean
 	public ServiceHttpCommandProcessor serviceHttpCommandProcessor() {
 		return new ServiceHttpCommandProcessor();	
+	}
+	
+	@Bean
+	public CommandScheduler commandScheduler() {
+		return new CommandScheduler();	
 	}
 
 	@Bean

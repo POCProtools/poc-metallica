@@ -3,7 +3,6 @@ package fr.insee.metallica.pocprotoolscommand.service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -18,8 +17,6 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -50,43 +47,12 @@ public class CommandEngine {
 	
 	private ExecutorService executorService = Executors.newFixedThreadPool(10);
 	
-	@Scheduled(fixedDelayString = "${command.schedule.delayHeartBeat:5}", timeUnit = TimeUnit.SECONDS)
-	public void updateOwnedCommand() {
-		List<UUID> currentCommands;
-		synchronized (this.currentCommands) {
-			currentCommands = List.copyOf(this.currentCommands);
-		}
-		for (var id : currentCommands) {
-			commandService.heartBeat(id);
-		}
-	}
-	
-	@Scheduled(fixedDelayString = "${command.schedule.delayBeetweenRetryCheck:5}", timeUnit = TimeUnit.SECONDS)
-	public void checkForScheduledCommand() {
-		for (var command : commandRepository.findCommandsScheduled(100)) {
-			process(command.getId());
-		}
-	}
-	
-	@Scheduled(fixedDelayString = "${command.schedule.delayBeetweenDeadCheck:5}", timeUnit = TimeUnit.SECONDS)
-	public void checkForDeadCommand() {
-		for(int i = 0; i < 100; i++) {
-			var page = commandRepository.findPageByStatusAndLastHeartBeatLessThanEqual(Status.Processing, LocalDateTime.now().minusSeconds(commandProperties.getSchedule().getTimeWithoutHeartBeatBeforeDeath()), PageRequest.of(0, 10));
-			if (page.getNumberOfElements() == 0) return;
-			
-			page.stream().forEach((c) -> { 
-				commandRepository.setStatus(c.getId(), Status.Processing, Status.Pending);
-				process(c.getId());
-			});
-		}
-	}
-	
 	@PostConstruct
 	public void registerCommandEvent() {
-		commandService.subscribe((command, data) -> registerAfterCommit(() -> this.process(command.getId())), Type.Added);
+		commandService.subscribe((command, data) -> registerAfterCommit(() -> this.startProcess(command.getId())), Type.Added);
 	}
 	
-	public void process(UUID commandId) {
+	public void startProcess(UUID commandId) {
 		executorService.execute(() -> processThread(commandId));
 	}
 	
@@ -115,8 +81,8 @@ public class CommandEngine {
 				log.error("Error in command " + command.getId() + " abort", e);
 				commandService.error(command, e.getMessage());
 			} catch (CommandExecutionRetryException e) {
-				log.error("Error in command " + command.getId() + " retry", e);
-				commandService.retry(command, e.getMessage(), e.getDelayInSeconds());
+				log.info("Rescheduling of " + command.getId() + ": " + e.getMessage());
+				commandService.retry(command, e.getMessage(), e.getDelayInSeconds().orElse(commandProperties.getSchedule().getDelayBeetweenRetryCheck()));
 			} catch (Exception e) {
 				log.error("Unmanaged error in command " + command.getId() + " abort", e);
 				commandService.error(command, e.getMessage());
@@ -152,7 +118,7 @@ public class CommandEngine {
 	public void registerProcessor(String commandType, CommandProcessor processor) {
 		this.processors.put(commandType, processor);
 	}
-	
+
 	private void registerAfterCommit(Runnable action) {
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
@@ -160,5 +126,9 @@ public class CommandEngine {
 				action.run();
 			}
 		});
+	}
+
+	Set<UUID> getCurrentCommands() {
+		return this.currentCommands;
 	}
 }

@@ -72,6 +72,9 @@ public abstract class AbstractHttpCommandProcessor<T extends HttpPayload> extend
 			var request = builder.build();
 
 			var result = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+			if (payload.getRescheduleStatus().contains(result.statusCode())) {
+				throw new CommandExecutionRetryException("Resheduled because of status code", command.getRescheduledDelay());
+			}
 			if (result.statusCode() == HttpStatus.SERVICE_UNAVAILABLE.value() || result.statusCode() == HttpStatus.BAD_GATEWAY.value()) {
 				throw new CommandExecutionRetryException("Error " + result.statusCode() + " " + (result.body() != null ? result.body() : "")); 
 			}

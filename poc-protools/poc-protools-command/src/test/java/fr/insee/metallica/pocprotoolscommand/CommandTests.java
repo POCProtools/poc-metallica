@@ -1,5 +1,9 @@
 package fr.insee.metallica.pocprotoolscommand;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,10 +22,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fr.insee.metallica.mock.MockApplication;
 import fr.insee.metallica.pocprotoolscommand.domain.Command.Status;
+import fr.insee.metallica.pocprotoolscommand.exception.CommandExecutionRetryException;
 import fr.insee.metallica.pocprotoolscommand.repository.CommandRepository;
 import fr.insee.metallica.pocprotoolscommand.service.CommandEngine;
-import fr.insee.metallica.pocprotoolscommand.service.CommandService;
 import fr.insee.metallica.pocprotoolscommand.service.CommandEventListener.Type;
+import fr.insee.metallica.pocprotoolscommand.service.CommandScheduler;
+import fr.insee.metallica.pocprotoolscommand.service.CommandService;
 
 @SpringBootTest(classes = MockApplication.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 class CommandTests {
@@ -30,6 +36,9 @@ class CommandTests {
 	
 	@Autowired
 	private CommandEngine commandEngine;	
+	
+	@Autowired
+	private CommandScheduler commandScheduler;	
 	
 	@Autowired
 	private CommandRepository commandRepository;
@@ -74,6 +83,79 @@ class CommandTests {
 	}
 
 	@Test
+	void testNominalAsync() throws Throwable {
+		var lock = new Object();
+		commandEngine.registerProcessor("async-create-file", (command) -> {
+			new Thread(() -> {
+				synchronized (lock) {
+					try {
+						lock.wait();
+					} catch (InterruptedException e) {
+					}
+				}
+				var file = new File(command.getPayload());
+				try (var stream = new PrintStream(new FileOutputStream(file))) {
+					stream.println("done");
+				} catch (FileNotFoundException e) {
+				}
+			}).start();
+			return "started";
+		});
+		
+		var compteur = new AtomicInteger(0);
+		var rescheduleCompteur = new AtomicInteger(0);
+		commandEngine.registerProcessor("check-file", (command) -> {
+			var file = new File(command.getPayload());
+			compteur.incrementAndGet();
+			if (!file.exists()) {
+				rescheduleCompteur.incrementAndGet();
+				throw new CommandExecutionRetryException("file not yet available");
+			}
+			return "file exists";
+		});
+		var file = File.createTempFile("testfile", ".txt");
+		file.delete();
+		var filePath = file.getAbsolutePath();
+		
+		var command = commandService.createCommand("async-create-file")
+							.payload(filePath)
+							.asyncResult("check-file")
+							.rescheduledDelay(1)
+							.payload(filePath)
+							.saveAndSend();
+		
+		var commandId = command.getId();
+		
+		var dbCommand = commandRepository.findById(commandId).orElse(null);
+		assert dbCommand != null;
+		assert dbCommand.getId().equals(command.getId());
+		assert dbCommand.getResultFetcher() != null;
+		
+		var fecherId = dbCommand.getResultFetcher().getId();
+		
+		waitFor(1, () -> commandRepository.findById(commandId).orElse(null).getStatus() == Status.AwaitingResult);
+		waitFor(10, () -> compteur.get() > 0);
+		
+		assert compteur.get() > 0;
+		assert rescheduleCompteur.get() > 0;
+		
+		dbCommand = commandRepository.findById(command.getId()).orElse(null);
+		
+		assert dbCommand.getStatus() == Status.AwaitingResult;
+		assert dbCommand.getResultFetcher().getStatus() == Status.Processing || 
+			   dbCommand.getResultFetcher().getStatus() == Status.Retry;
+		
+		synchronized (lock) {
+			lock.notify();
+		}
+		waitFor(10, () -> commandRepository.findById(fecherId).orElse(null).getStatus() == Status.Done);
+		
+		dbCommand = commandRepository.findById(command.getId()).orElse(null);
+		assert dbCommand.getStatus() == Status.Done;
+		assert dbCommand.getResult().equals("file exists");
+	}
+
+	@Test
 	void resurection() throws Throwable {
 		AtomicInteger b = new AtomicInteger();
 		commandEngine.registerProcessor("test-resurection", (command) -> {
@@ -85,8 +167,8 @@ class CommandTests {
 		
 		commandRepository.setStatus(command.getId(), Status.Pending, Status.Processing);
 		commandRepository.heartBeat(command.getId(), LocalDateTime.now().minusSeconds(10));
-		// the command schould to be considered dead
-		commandEngine.checkForDeadCommand();
+		// the command should to be considered dead
+		commandScheduler.checkForDeadCommand();
 		
 		assert waitFor(10, () -> commandRepository.findById(command.getId()).orElseThrow().getStatus() == Status.Done);
 	}
@@ -104,10 +186,10 @@ class CommandTests {
 		
 		var commandId = command.getId();
 		
-		commandEngine.checkForScheduledCommand();
+		commandScheduler.checkForScheduledCommand();
 		assert commandRepository.findById(commandId).orElseThrow().getStatus() == Status.Pending;
 		assert waitFor(10, () -> {
-			commandEngine.checkForScheduledCommand();
+			commandScheduler.checkForScheduledCommand();
 			return commandRepository.findById(commandId).orElseThrow().getStatus() == Status.Done;
 		});
 	}
@@ -193,12 +275,15 @@ class CommandTests {
 		var startTime = System.currentTimeMillis();
 		while(System.currentTimeMillis() < 1000 * timeMax + startTime) {
 			if (b.get()) return true;
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+			sleep(100);
 		}
 		return b.get();
+	}
+
+	private void sleep(int milliseconds) {
+		try {
+			Thread.sleep(milliseconds);
+		} catch (InterruptedException e) {
+		}
 	}
 }

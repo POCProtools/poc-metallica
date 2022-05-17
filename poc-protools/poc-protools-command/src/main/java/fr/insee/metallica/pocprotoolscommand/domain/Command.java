@@ -7,8 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
@@ -18,7 +20,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Table(indexes = {@Index(columnList = "status"), @Index(columnList = "nextScheduledTime"), @Index(columnList = "limitKey")})
 public class Command {
 	public static enum Status {
-		Pending, Processing, Done, Error, Retry
+		WaitingToBeScheduled, Pending, Processing, Done, Error, Retry, AwaitingResult
 	}
 	
 	@Id
@@ -26,6 +28,12 @@ public class Command {
 	private UUID id = UUID.randomUUID();
 	
 	private String type;
+	
+	@OneToOne(optional = true)
+	private Command resultFetcher;
+	
+	@OneToOne(fetch = FetchType.LAZY, optional = true, mappedBy = "resultFetcher")
+	private Command originalCommand;
 	
 	@LastModifiedDate
 	private LocalDateTime lastUpdate;
@@ -52,12 +60,26 @@ public class Command {
 	
 	private String limitKey;
 	
+	private Integer rescheduledDelay;
+	
 	public UUID getId() {
 		return id;
 	}
 
 	public void setId(UUID id) {
 		this.id = id;
+	}
+	
+	public Command getResultFetcher() {
+		return resultFetcher;
+	}
+
+	public void setResultFetcher(Command resultFetcher) {
+		this.resultFetcher = resultFetcher;
+	}
+	
+	public Command getOriginalCommand() {
+		return originalCommand;
 	}
 
 	public String getContext() {
@@ -143,4 +165,14 @@ public class Command {
 	public void setLimitKey(String limitKey) {
 		this.limitKey = limitKey;
 	}
+
+	public Integer getRescheduledDelay() {
+		return rescheduledDelay;
+	}
+
+	public void setRescheduledDelay(int rescheduledDelayInSeconds) {
+		this.rescheduledDelay = rescheduledDelayInSeconds;
+	}
+	
+	
 }

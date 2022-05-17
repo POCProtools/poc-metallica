@@ -1,5 +1,6 @@
 package fr.insee.metallica.pocprotoolscommand.processor.payload;
 
+import java.util.List;
 import java.util.Map;
 
 public class HttpPayload {
@@ -10,6 +11,7 @@ public class HttpPayload {
 	private Map<String, String> headers;
 	private HttpMethod method;
 	private Object body;
+	private List<Integer> rescheduleStatus;
 
 	public Object getBody() {
 		return body;
@@ -28,5 +30,11 @@ public class HttpPayload {
 	}
 	public void setHeaders(Map<String, String> headers) {
 		this.headers = headers;
+	}
+	public List<Integer> getRescheduleStatus() {
+		return rescheduleStatus;
+	}
+	public void setRescheduleStatus(List<Integer> rescheduleStatus) {
+		this.rescheduleStatus = rescheduleStatus;
 	}
 }

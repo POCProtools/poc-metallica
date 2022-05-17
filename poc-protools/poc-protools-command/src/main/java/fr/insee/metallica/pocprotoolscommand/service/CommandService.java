@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
@@ -27,19 +28,36 @@ import fr.insee.metallica.pocprotoolscommand.service.CommandEventListener.Type;
 public class CommandService {
 	static final Logger log = LoggerFactory.getLogger(CommandService.class);
 	
-	@Autowired
-	private CommandRepository commandRepository;
+	@Autowired CommandRepository commandRepository;
 
-	@Autowired
-	private ObjectMapper mapper;
+	@Autowired ObjectMapper mapper;
 	
-	@Autowired
-	private TransactionTemplate transactionTemplate;
+	@Autowired TransactionTemplate transactionTemplate;
 	
 	private final Map<Type, List<CommandEventListener>> listeners = new HashMap<>();
 	
+	@PostConstruct
+	void init() {
+		subscribe((Command command, Object result) -> { 
+			if (command.getOriginalCommand() != null) {
+				command.getOriginalCommand().setStatus(Status.Done);
+				command.getOriginalCommand().setResult(command.getResult());
+				commandRepository.save(command.getOriginalCommand());	
+				publish(Type.Done, command.getOriginalCommand(), result);
+			}
+		}, Type.Done);
+		subscribe((Command command, Object result) -> { 
+			if (command.getOriginalCommand() != null) {
+				command.getOriginalCommand().setStatus(Status.Error);
+				command.getOriginalCommand().setResult(command.getResult());
+				commandRepository.save(command.getOriginalCommand());	
+				publish(Type.Done, command.getOriginalCommand(), result);
+			}
+		}, Type.Error);
+	}
+	
 	public CommandBuilder createCommand(String type) {
-		return new CommandBuilder(type);
+		return new CommandBuilder(this, type);
 	}
 	
 	public Command aquireOneToProcess() {
@@ -79,17 +97,25 @@ public class CommandService {
 
 	@Transactional
 	public Command done(Command command, Object result) throws JsonProcessingException {
-		
 		command = commandRepository.getById(command.getId());
-		command.setStatus(Status.Done);
-		if (result != null) {
-			if (result instanceof String)
-				command.setResult((String)result);
-			else 
-				command.setResult(mapper.writeValueAsString(result));
+		Type publish = Type.Done;
+		if (command.getResultFetcher() != null) {
+			command.getResultFetcher().setStatus(Status.Pending);
+			command.getResultFetcher().setNextScheduledTime(LocalDateTime.now());
+			commandRepository.save(command.getResultFetcher());
+			command.setStatus(Status.AwaitingResult);
+			publish = Type.AwaitingResult;
+		} else {
+			command.setStatus(Status.Done);
+			if (result != null) {
+				command.setResult(result instanceof String ?
+					(String)result :
+					mapper.writeValueAsString(result)
+				);
+			}
 		}
 		command = commandRepository.save(command);
-		publish(Type.Done, command, result);
+		publish(publish, command, result);
 		return command;
 	}
 
@@ -148,74 +174,5 @@ public class CommandService {
 				action.run();
 			}
 		});
-	}
-	
-	public class CommandBuilder {
-		private Command c = new Command();
-		
-		public CommandBuilder(String type) {
-			c.setType(type);
-		}
-		public CommandBuilder payload(String payload) { 
-			c.setPayload(payload);
-			return this;
-		}
-		public CommandBuilder payload(Object payload) throws JsonProcessingException { 
-			c.setPayload(payload == null ? null :
-				payload instanceof String ? (String) payload :
-				mapper.writeValueAsString(payload));
-			return this;
-		}
-		public CommandBuilder context(String context) { 
-			c.setContext(context);
-			return this;
-
-		}
-		public CommandBuilder context(Object context) throws JsonProcessingException {
-			c.setContext(context == null ? null :
-					context instanceof String ? (String) context :
-					mapper.writeValueAsString(context));
-			return this;
-		}
-		public CommandBuilder scheduledTime(LocalDateTime date) throws JsonProcessingException {
-			c.setNextScheduledTime(date);
-			return this;
-		}
-
-		public Command saveAndSend() {
-			c.setStatus(Status.Pending);
-			if (c.getNextScheduledTime() == null)
-				c.setNextScheduledTime(LocalDateTime.now());
-			
-			return transactionTemplate.execute((status) -> {
-				c = commandRepository.save(c);
-				publish(Type.Added,c, null);
-				return c;
-			});
-		}
-
-		public Command saveAndSendWithLimit(int limit, String limitKey) {
-			c.setStatus(Status.Pending);
-			c.setConcurrencyLimit(limit);
-			c.setLimitKey(limitKey);
-			if (c.getNextScheduledTime() == null)
-				c.setNextScheduledTime(LocalDateTime.now());
-			
-			return transactionTemplate.execute((status) -> {
-				c = commandRepository.save(c);
-				publish(Type.Added,c, null);
-				return c;
-			});
-		}
-
-		public Command saveNoSend() {
-			c.setStatus(Status.Pending);
-			if (c.getNextScheduledTime() == null)
-				c.setNextScheduledTime(LocalDateTime.now());
-			return transactionTemplate.execute((status) -> {
-				c = commandRepository.save(c);
-				return c;
-			});
-		}
 	}
 }

@@ -16,5 +16,4 @@ public class ServiceHttpPayload extends HttpPayload {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
 }
