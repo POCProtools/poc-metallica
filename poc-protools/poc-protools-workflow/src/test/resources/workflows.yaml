@@ -1,0 +1,101 @@
+workflows:
+- name: GeneratePasswordAndSendMail
+  id: "00000000-0002-0000-0000-000000000000"
+  steps:
+  - label: "generate password"
+    id: "00000000-0002-0000-0000-000000000001"
+    limit: 20
+    limitKey: PasswordService
+    type: ServiceHttp
+    metadatas:
+      service: "password-generator"
+      path: "/generate-password"
+      username: "${context.username}"
+    payloadTemplate: |
+      {
+        "path": "${metadatas.path}",
+        "service": "${metadatas.service}",
+        "body": { "username": "${metadatas.username}" },
+        "method": "POST"
+      }
+    
+  - label: "Add generated to context"
+    id: "00000000-0002-0000-0000-000000000002"
+    type: EnrichContextProcessor
+    metadatas: 
+      password: "${context.previousResult.password}"
+    payloadTemplate: |
+      {"password": "${metadatas.password}"}
+    
+  - label: "generate password"
+    id: "00000000-0002-0000-0000-000000000003"
+    type: ServiceHttp
+    metadatas: 
+      service: "send-mail"
+      path: "/send-mail"
+      username: "${context.username}"
+      password: "${context.password}"
+      method: "POST"
+    payloadTemplate: |
+      {
+       "path": "${metadatas.path}",
+       "service": "${metadatas.service}",
+       "body": { "username": "${metadatas.username}", "password":"${metadatas.password}" },
+       "method": "${metadatas.method}"
+      }
+      
+- name: GeneratePasswordAndSendMailWithAsyncResult
+  id: "00000000-0001-0000-0000-000000000000"
+  steps:
+  - label: "generate password"
+    id: "00000000-0001-0000-0000-000000000001"
+    limit: 20
+    limitKey: PasswordService
+    type: ServiceHttp
+    metadatas:
+      service: "password-generator"
+      path: "/generate-password"
+      username: "${context.username}"
+    payloadTemplate: |
+      {
+        "path": "${metadatas.path}",
+        "service": "${metadatas.service}",
+        "body": { "username": "${metadatas.username}" },
+        "method": "POST"
+      }
+    
+  - label: "Add generated to context"
+    id: "00000000-0001-0000-0000-000000000002"
+    type: EnrichContextProcessor
+    metadatas: 
+      password: "${context.previousResult.password}"
+    payloadTemplate: |
+      {"password": "${metadatas.password}"}
+    
+  - label: "send mail"
+    id: "00000000-0001-0000-0000-000000000003"
+    type: ServiceHttp
+    metadatas: 
+      service: "send-mail"
+      path: "/send-mail-async"
+      username: "${context.username}"
+      password: "${context.password}"
+      method: "POST"
+    payloadTemplate: |
+      {
+       "path": "${metadatas.path}",
+       "service": "${metadatas.service}",
+       "body": { "username": "${metadatas.username}", "password":"${metadatas.password}" },
+       "method": "${metadatas.method}"
+      }
+    asyncResult:
+      label: "was mail sent"
+      id: "00000000-0001-0000-0000-000000000004"
+      type: ServiceHttp
+      payloadTemplate: |
+        {
+         "path": "/was-mail-send/${context.username}",
+         "service": "send-mail",
+         "rescheduleStatus": [202],
+         "method": "GET"
+        }

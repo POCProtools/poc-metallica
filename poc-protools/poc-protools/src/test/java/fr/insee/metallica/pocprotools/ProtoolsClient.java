@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import fr.insee.metallica.pocprotools.controller.StartWorkflowController.UsernameDto;
-import fr.insee.metallica.pocprotools.domain.Workflow;
+import fr.insee.metallica.workflow.domain.Workflow;
 
 @FeignClient(value = "protools", url = "${command.services.protools}")
 public interface ProtoolsClient {

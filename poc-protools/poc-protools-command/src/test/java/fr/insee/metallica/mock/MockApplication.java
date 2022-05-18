@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import fr.insee.metallica.pocprotoolscommand.configuration.EnableCommand;
+import fr.insee.metallica.command.configuration.EnableCommand;
 
 @SpringBootApplication
 @EnableCommand

@@ -1,7 +1,6 @@
 package fr.insee.metallica.pocprotools.controller;
 
 import java.util.UUID;
-import java.util.concurrent.Future;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -22,9 +21,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import fr.insee.metallica.pocprotools.domain.Workflow;
-import fr.insee.metallica.pocprotools.service.WorkflowEngine;
-import fr.insee.metallica.pocprotools.service.WorkflowService;
+import fr.insee.metallica.workflow.domain.Workflow;
+import fr.insee.metallica.workflow.dto.WorkflowStatusDto;
+import fr.insee.metallica.workflow.service.WorkflowExecutionService;
+import fr.insee.metallica.workflow.service.WorkflowStatusService;
 
 @RestController
 public class StartWorkflowController {
@@ -43,15 +43,15 @@ public class StartWorkflowController {
 	}
 	
 	@Autowired
-	private WorkflowEngine workflowEngine;
+	private WorkflowExecutionService workflowExecutionService;
 	
 	@Autowired
-	private WorkflowService workflowService;
+	private WorkflowStatusService workflowStatusService;
 	
 	@PostMapping(path = "/start-workflow")
 	public DeferredResult<ResponseEntity<String>> startWorkflow(@Valid @RequestBody UsernameDto dto) {
 		var result = new DeferredResult<ResponseEntity<String>>();
-		var future = workflowEngine.startWorkflowAndWait("GeneratePasswordAndSendMail", dto);
+		var future = workflowExecutionService.executeWorkflow("GeneratePasswordAndSendMail", dto);
 		future.whenComplete((res, ex) -> 
 			result.setResult(
 				ex != null ?
@@ -65,7 +65,7 @@ public class StartWorkflowController {
 	@PostMapping(path = "/start-workflow-async-mail")
 	public DeferredResult<ResponseEntity<String>> startWorkflowAsyncMail(@Valid @RequestBody UsernameDto dto) {
 		var result = new DeferredResult<ResponseEntity<String>>();
-		var future = workflowEngine.startWorkflowAndWait("GeneratePasswordAndSendMailWithAsyncResult", dto);
+		var future = workflowExecutionService.executeWorkflow("GeneratePasswordAndSendMailWithAsyncResult", dto);
 		future.whenComplete((res, ex) -> 
 			result.setResult(
 				ex != null ?
@@ -77,9 +77,9 @@ public class StartWorkflowController {
 	}
 	
 	@PostMapping(path = "/start-workflow-async")
-	public Future<Workflow> startWorkflowAsync(@Valid @RequestBody UsernameDto dto) {
+	public Workflow startWorkflowAsync(@Valid @RequestBody UsernameDto dto) {
 		try {
-			return workflowEngine.startWorkflow("GeneratePasswordAndSendMail", dto);
+			return workflowExecutionService.startWorkflow("GeneratePasswordAndSendMail", dto);
 		} catch (JsonProcessingException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Could not serialize the Dto");
 		}
@@ -87,7 +87,7 @@ public class StartWorkflowController {
 
 	@GetMapping(path = "/workflow/{id}")
 	@ResponseBody
-	public WorkflowDto getStatus(@PathVariable("id") UUID id) {
-		return workflowService.getStatus(id);
+	public WorkflowStatusDto getStatus(@PathVariable("id") UUID id) {
+		return workflowStatusService.getStatus(id);
 	}
 }

@@ -12,6 +12,7 @@
 
 	<modules>
 		<module>poc-protools-command</module>
+		<module>poc-protools-workflow</module>
 		<module>poc-protools</module>
 	</modules>
 </project>
