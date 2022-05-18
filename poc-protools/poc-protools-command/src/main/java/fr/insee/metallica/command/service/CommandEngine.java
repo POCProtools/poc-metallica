@@ -1,9 +1,7 @@
 package fr.insee.metallica.command.service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +23,6 @@ import fr.insee.metallica.command.domain.Command;
 import fr.insee.metallica.command.domain.Command.Status;
 import fr.insee.metallica.command.exception.CommandExecutionAbortException;
 import fr.insee.metallica.command.exception.CommandExecutionRetryException;
-import fr.insee.metallica.command.processor.CommandProcessor;
 import fr.insee.metallica.command.repository.CommandRepository;
 import fr.insee.metallica.command.service.CommandEventListener.Type;
 
@@ -36,14 +33,15 @@ public class CommandEngine {
 	private CommandProperties commandProperties;
 	
 	@Autowired
+	private CommandProcessorService commandProcessorService;
+	
+	@Autowired
 	private CommandService commandService;
 
 	@Autowired
 	private CommandRepository commandRepository;
 	
 	private final Set<UUID> currentCommands = new HashSet<UUID>();
-	
-	private final Map<String, CommandProcessor> processors = new HashMap<>();
 	
 	private ExecutorService executorService = Executors.newFixedThreadPool(10);
 	
@@ -67,14 +65,14 @@ public class CommandEngine {
 					rescheduleIfProcessing(commandId);
 					return;
 				}
-				var processor = processors.get(command.getType());
+				var processor = commandProcessorService.getProcessor(command.getType());
 				if (processor == null) throw new CommandExecutionAbortException("Processor for " + command.getType() + " not found");
 				
 				log.info("Starting command {}", command.getId());
 				commandService.publish(Type.Processing, command);
 				
 				var result = processor.process(command);
-				commandService.done(command, result);
+				commandService.done(command, result, processor.isResultSerialized());
 				
 				log.info("Command executed {}", command.getId());
 			} catch (CommandExecutionAbortException e) {
@@ -113,10 +111,6 @@ public class CommandEngine {
 
 	private void rescheduleIfProcessing(UUID commandId) {
 		commandRepository.reschedule(commandId, Status.Processing, Status.Retry, LocalDateTime.now().plusSeconds(commandProperties.getSchedule().getDelayHeartBeat()));
-	}
-
-	public void registerProcessor(String commandType, CommandProcessor processor) {
-		this.processors.put(commandType, processor);
 	}
 
 	private void registerAfterCommit(Runnable action) {

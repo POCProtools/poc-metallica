@@ -14,14 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fr.insee.metallica.command.domain.Command;
-import fr.insee.metallica.command.service.CommandService;
 import fr.insee.metallica.command.service.CommandEventListener.Type;
+import fr.insee.metallica.command.service.CommandService;
 import fr.insee.metallica.workflow.configuration.descriptor.StepDescriptor;
 import fr.insee.metallica.workflow.configuration.descriptor.WorkflowDescriptor;
 import fr.insee.metallica.workflow.domain.Workflow;

@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.insee.metallica.command.domain.Command.Status;
 import fr.insee.metallica.command.exception.CommandExecutionRetryException;
 import fr.insee.metallica.command.repository.CommandRepository;
-import fr.insee.metallica.command.service.CommandEngine;
+import fr.insee.metallica.command.service.CommandEventListener.Type;
+import fr.insee.metallica.command.service.CommandProcessorService;
 import fr.insee.metallica.command.service.CommandScheduler;
 import fr.insee.metallica.command.service.CommandService;
-import fr.insee.metallica.command.service.CommandEventListener.Type;
 import fr.insee.metallica.mock.MockApplication;
 
 @SpringBootTest(classes = MockApplication.class, webEnvironment = WebEnvironment.DEFINED_PORT)
@@ -35,7 +35,7 @@ class CommandTests {
 	private CommandService commandService;	
 	
 	@Autowired
-	private CommandEngine commandEngine;	
+	private CommandProcessorService commandProcessorService;	
 	
 	@Autowired
 	private CommandScheduler commandScheduler;	
@@ -71,7 +71,7 @@ class CommandTests {
 		
 		assert commandService.aquireOneToProcess() == null;
 		
-		commandService.done(command, Map.of("password", "Maisoui!!!"));
+		commandService.done(command, Map.of("password", "Maisoui!!!"), false);
 		
 		dbCommand = commandRepository.findById(command.getId()).orElseThrow();
 		assert dbCommand.getStatus() == Status.Done;
@@ -85,7 +85,7 @@ class CommandTests {
 	@Test
 	void testNominalAsync() throws Throwable {
 		var lock = new Object();
-		commandEngine.registerProcessor("async-create-file", (command) -> {
+		commandProcessorService.registerProcessor("async-create-file", (command) -> {
 			new Thread(() -> {
 				synchronized (lock) {
 					try {
@@ -104,7 +104,7 @@ class CommandTests {
 		
 		var compteur = new AtomicInteger(0);
 		var rescheduleCompteur = new AtomicInteger(0);
-		commandEngine.registerProcessor("check-file", (command) -> {
+		commandProcessorService.registerProcessor("check-file", (command) -> {
 			var file = new File(command.getPayload());
 			compteur.incrementAndGet();
 			if (!file.exists()) {
@@ -152,13 +152,13 @@ class CommandTests {
 		
 		dbCommand = commandRepository.findById(command.getId()).orElse(null);
 		assert dbCommand.getStatus() == Status.Done;
-		assert dbCommand.getResult().equals("file exists");
+		assert dbCommand.getResult().equals("\"file exists\"");
 	}
 
 	@Test
 	void resurection() throws Throwable {
 		AtomicInteger b = new AtomicInteger();
-		commandEngine.registerProcessor("test-resurection", (command) -> {
+		commandProcessorService.registerProcessor("test-resurection", (command) -> {
 			return b.incrementAndGet();
 		});
 		
@@ -176,7 +176,7 @@ class CommandTests {
 	@Test
 	void retry() throws Throwable {
 		AtomicInteger b = new AtomicInteger();
-		commandEngine.registerProcessor("test-retry", (command) -> {
+		commandProcessorService.registerProcessor("test-retry", (command) -> {
 			return b.incrementAndGet();
 		});
 		
@@ -200,7 +200,7 @@ class CommandTests {
 		AtomicInteger b = new AtomicInteger(0);
 		AtomicInteger c = new AtomicInteger(0);
 		
-		commandEngine.registerProcessor("test", (command) -> {
+		commandProcessorService.registerProcessor("test", (command) -> {
 			return b.incrementAndGet();
 		});
 		int nbCommand = 5000;
@@ -233,14 +233,14 @@ class CommandTests {
 		AtomicInteger concurrent = new AtomicInteger(0);
 		AtomicInteger maxConcurrent = new AtomicInteger(0);
 		
-		commandEngine.registerProcessor("test-concurrent-limit", (command) -> {
+		commandProcessorService.registerProcessor("test-concurrent-limit", (command) -> {
 			var currentConcurrency = concurrent.incrementAndGet();
 			if (currentConcurrency > maxConcurrent.get()) {
 				maxConcurrent.set(currentConcurrency);
 			}
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

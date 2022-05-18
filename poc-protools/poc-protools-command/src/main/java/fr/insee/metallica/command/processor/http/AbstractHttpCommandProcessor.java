@@ -31,6 +31,11 @@ public abstract class AbstractHttpCommandProcessor<T extends HttpPayload> extend
 	
 	abstract protected URI getUri(Command command, T payload);
 	
+	@Override
+	public boolean isResultSerialized() { 
+		return true; 
+	}
+	
 	@Autowired
 	private ObjectMapper mapper;
 	

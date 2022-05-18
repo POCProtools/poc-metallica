@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.metallica.command.service.CommandEngine;
+import fr.insee.metallica.command.service.CommandProcessorService;
 import fr.insee.metallica.mock.MockProtoolsApplication;
 import fr.insee.metallica.workflow.service.WorkflowExecutionService;
 
@@ -25,7 +25,7 @@ public class WorkflowTest {
 	private WorkflowExecutionService workflowExecutionService;
 	
 	@Autowired
-	private CommandEngine commandEngine;
+	private CommandProcessorService commandProcessorService;
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -33,9 +33,9 @@ public class WorkflowTest {
 	@Test
 	public void testParse() throws JsonProcessingException {
 		List<String> result = new ArrayList<>(); 
-		commandEngine.registerProcessor("TestNominalProcessor", command -> result.add(command.getPayload()));
+		commandProcessorService.registerProcessor("TestNominalProcessor", command -> result.add(command.getPayload()));
 		
-		commandEngine.registerProcessor("TestNominalProcessorObject", command -> { 
+		commandProcessorService.registerProcessor("TestNominalProcessorObject", command -> { 
 			result.add(readValue(command.getPayload(), TestDto.class).value);
 			return "valeur de previous result";
 		});
@@ -50,6 +50,18 @@ public class WorkflowTest {
 
 	}
 
+	@Test
+	public void testSubworkflow() throws JsonProcessingException {
+		List<String> result = new ArrayList<>(); 
+		commandProcessorService.registerProcessor("TestSubworkflowProcessor", command -> result.add(command.getPayload()));
+		
+		workflowExecutionService.executeWorkflow("TestSubworkflow", Map.of())
+			.join();
+		
+		assert result.get(0).equals("testSubWorkflow") ;
+	}
+
+	
 	private <T> T readValue(String payload, Class<T> clazz) {
 		try {
 			return mapper.readValue(payload, clazz);

@@ -8,9 +8,11 @@ import fr.insee.metallica.command.service.CommandEventListener.Type;
 
 public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 	private AsyncResultFetcherBuilder asyncResult;
+	protected final CommandProcessorService commandProcessorService;
 
-	public CommandBuilder(CommandService commandService, String type) {
+	public CommandBuilder(CommandService commandService, CommandProcessorService commandProcessorService, String type) {
 		super(commandService, type);
+		this.commandProcessorService = commandProcessorService;
 	}
 	
 	@Override
@@ -40,10 +42,16 @@ public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 			command.setNextScheduledTime(LocalDateTime.now());
 		
 		return this.commandService.transactionTemplate.execute((status) -> {
+			var processor = commandProcessorService.getProcessor(command.getType());
 			if (asyncResult != null) {
 				asyncResult.command.setStatus(Status.WaitingToBeScheduled);
 				this.commandService.commandRepository.save(asyncResult.command);
 				command.setResultFetcher(asyncResult.command);
+			} else if (processor != null && processor.isAsynchronousResult()) {
+				var asyncResultCommand = processor.getAsyncResultCommand(command); 
+				asyncResultCommand.setStatus(Status.WaitingToBeScheduled);
+				this.commandService.commandRepository.save(asyncResultCommand);
+				command.setResultFetcher(asyncResultCommand);
 			}
 			
 			command = this.commandService.commandRepository.save(command);

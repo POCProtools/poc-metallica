@@ -13,6 +13,7 @@ import fr.insee.metallica.command.processor.http.ServiceHttpCommandProcessor;
 import fr.insee.metallica.command.processor.http.UrlHttpCommandProcessor;
 import fr.insee.metallica.command.repository.CommandRepository;
 import fr.insee.metallica.command.service.CommandEngine;
+import fr.insee.metallica.command.service.CommandProcessorService;
 import fr.insee.metallica.command.service.CommandScheduler;
 import fr.insee.metallica.command.service.CommandService;
 
@@ -59,5 +60,10 @@ public class CommandConfiguration {
 	@Bean
 	public CommandProperties commandProperties() {
 		return new CommandProperties();
+	}
+	
+	@Bean
+	public CommandProcessorService commandProcessorService() {
+		return new CommandProcessorService();
 	}
 }

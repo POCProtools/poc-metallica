@@ -30,4 +30,23 @@ workflows:
     id: "00000000-0002-0000-0000-000000000005"
     type: TestNominalProcessor
     payloadTemplate: "${context.previousResult}"
-      
+     
+- name: TestSubworkflow
+  id: "00000000-0003-0000-0000-000000000000"
+  steps:
+  - label: "call su workflow context"
+    id: "00000000-0003-0000-0000-000000000001"
+    type: SubWorkflowLauncherProcessor
+    payloadTemplate: |
+      {
+        "context": {"value": "testSubWorkflow"},
+        "workflowName": "SubWorkflowTestSubworkflow"
+      }
+
+- name: SubWorkflowTestSubworkflow
+  id: "00000000-0004-0000-0000-000000000000"
+  steps:
+  - label: "call su workflow context"
+    id: "00000000-0004-0000-0000-000000000001"
+    type: TestSubworkflowProcessor
+    payloadTemplate: "${context.value}"

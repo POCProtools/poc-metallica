@@ -28,11 +28,17 @@ import fr.insee.metallica.command.service.CommandEventListener.Type;
 public class CommandService {
 	static final Logger log = LoggerFactory.getLogger(CommandService.class);
 	
-	@Autowired CommandRepository commandRepository;
+	@Autowired 
+	CommandRepository commandRepository;
 
-	@Autowired ObjectMapper mapper;
+	@Autowired 
+	CommandProcessorService commandProcessorService;
+
+	@Autowired 
+	ObjectMapper mapper;
 	
-	@Autowired TransactionTemplate transactionTemplate;
+	@Autowired 
+	TransactionTemplate transactionTemplate;
 	
 	private final Map<Type, List<CommandEventListener>> listeners = new HashMap<>();
 	
@@ -59,7 +65,7 @@ public class CommandService {
 	}
 	
 	public CommandBuilder createCommand(String type) {
-		return new CommandBuilder(this, type);
+		return new CommandBuilder(this, commandProcessorService, type);
 	}
 	
 	public Command aquireOneToProcess() {
@@ -114,9 +120,16 @@ public class CommandService {
 	}
 
 	@Transactional
-	public Command done(Command command, Object result) throws JsonProcessingException {
+	public Command done(Command command, Object result, boolean isResultSerialized) throws JsonProcessingException {
 		command = commandRepository.getById(command.getId());
 		Type publish = Type.Done;
+		if (result != null) {
+			if (result instanceof String && isResultSerialized) {
+				command.setResult((String) result);
+			} else {
+				command.setResult(mapper.writeValueAsString(result));
+			}
+		}
 		if (command.getResultFetcher() != null) {
 			command.getResultFetcher().setStatus(Status.Pending);
 			command.getResultFetcher().setNextScheduledTime(LocalDateTime.now());
@@ -125,9 +138,6 @@ public class CommandService {
 			publish = Type.AwaitingResult;
 		} else {
 			command.setStatus(Status.Done);
-			if (result != null) {
-				command.setResult(mapper.writeValueAsString(result));
-			}
 		}
 		command = commandRepository.save(command);
 		publish(publish, command, result);

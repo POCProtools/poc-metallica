@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.metallica.command.domain.Command;
 import fr.insee.metallica.command.exception.CommandExecutionException;
-import fr.insee.metallica.command.service.CommandEngine;
+import fr.insee.metallica.command.service.CommandProcessorService;
 
 public abstract class AbstractCommandProcessor implements CommandProcessor {
 	@Autowired
-	protected CommandEngine engine;
+	protected CommandProcessorService commandProcessorService;
 	
 	protected String commandType;
 
@@ -20,7 +20,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	
 	@PostConstruct
 	protected void register() {
-		engine.registerProcessor(commandType, this);
+		commandProcessorService.registerProcessor(commandType, this);
 	}
 
 	public abstract Object process(Command command) throws CommandExecutionException;

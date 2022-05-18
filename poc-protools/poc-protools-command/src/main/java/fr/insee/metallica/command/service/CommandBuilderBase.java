@@ -40,8 +40,11 @@ public abstract class CommandBuilderBase<T> {
 		command.setNextScheduledTime(date);
 		return getThis();
 	}
-	public T rescheduledDelay(int delayInSeconds) throws JsonProcessingException {
+	public T rescheduledDelay(int delayInSeconds) {
 		command.setRescheduledDelay(delayInSeconds);
 		return getThis();
+	}
+	public Command build() {
+		return command;
 	}
 }
