@@ -1,101 +1,33 @@
 workflows:
-- name: GeneratePasswordAndSendMail
+- name: TestNominal
   id: "00000000-0002-0000-0000-000000000000"
   steps:
-  - label: "generate password"
+  - label: "call with context"
     id: "00000000-0002-0000-0000-000000000001"
-    limit: 20
-    limitKey: PasswordService
-    type: ServiceHttp
-    metadatas:
-      service: "password-generator"
-      path: "/generate-password"
-      username: "${context.username}"
-    payloadTemplate: |
-      {
-        "path": "${metadatas.path}",
-        "service": "${metadatas.service}",
-        "body": { "username": "${metadatas.username}" },
-        "method": "POST"
-      }
+    type: TestNominalProcessor
+    payloadTemplate: "${context.contextValue}"
     
-  - label: "Add generated to context"
+  - label: "call with metadata"
     id: "00000000-0002-0000-0000-000000000002"
-    type: EnrichContextProcessor
-    metadatas: 
-      password: "${context.previousResult.password}"
-    payloadTemplate: |
-      {"password": "${metadatas.password}"}
-    
-  - label: "generate password"
-    id: "00000000-0002-0000-0000-000000000003"
-    type: ServiceHttp
-    metadatas: 
-      service: "send-mail"
-      path: "/send-mail"
-      username: "${context.username}"
-      password: "${context.password}"
-      method: "POST"
-    payloadTemplate: |
-      {
-       "path": "${metadatas.path}",
-       "service": "${metadatas.service}",
-       "body": { "username": "${metadatas.username}", "password":"${metadatas.password}" },
-       "method": "${metadatas.method}"
-      }
-      
-- name: GeneratePasswordAndSendMailWithAsyncResult
-  id: "00000000-0001-0000-0000-000000000000"
-  steps:
-  - label: "generate password"
-    id: "00000000-0001-0000-0000-000000000001"
-    limit: 20
-    limitKey: PasswordService
-    type: ServiceHttp
+    type: TestNominalProcessor
     metadatas:
-      service: "password-generator"
-      path: "/generate-password"
-      username: "${context.username}"
-    payloadTemplate: |
-      {
-        "path": "${metadatas.path}",
-        "service": "${metadatas.service}",
-        "body": { "username": "${metadatas.username}" },
-        "method": "POST"
-      }
+      display: "ca marche !"
+    payloadTemplate: "${metadatas.display}"
     
-  - label: "Add generated to context"
-    id: "00000000-0001-0000-0000-000000000002"
+  - label: "Add string to context"
+    id: "00000000-0002-0000-0000-000000000003"
     type: EnrichContextProcessor
-    metadatas: 
-      password: "${context.previousResult.password}"
     payloadTemplate: |
-      {"password": "${metadatas.password}"}
+      {"enrich": "valeur de context"}
     
-  - label: "send mail"
-    id: "00000000-0001-0000-0000-000000000003"
-    type: ServiceHttp
-    metadatas: 
-      service: "send-mail"
-      path: "/send-mail-async"
-      username: "${context.username}"
-      password: "${context.password}"
-      method: "POST"
+  - label: "call with object"
+    id: "00000000-0002-0000-0000-000000000004"
+    type: TestNominalProcessorObject
     payloadTemplate: |
-      {
-       "path": "${metadatas.path}",
-       "service": "${metadatas.service}",
-       "body": { "username": "${metadatas.username}", "password":"${metadatas.password}" },
-       "method": "${metadatas.method}"
-      }
-    asyncResult:
-      label: "was mail sent"
-      id: "00000000-0001-0000-0000-000000000004"
-      type: ServiceHttp
-      payloadTemplate: |
-        {
-         "path": "/was-mail-send/${context.username}",
-         "service": "send-mail",
-         "rescheduleStatus": [202],
-         "method": "GET"
-        }
+      { "value": "${context.enrich}" }
+      
+  - label: "call check result variable"
+    id: "00000000-0002-0000-0000-000000000005"
+    type: TestNominalProcessor
+    payloadTemplate: "${context.previousResult}"
+      

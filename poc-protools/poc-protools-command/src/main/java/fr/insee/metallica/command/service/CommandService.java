@@ -126,10 +126,7 @@ public class CommandService {
 		} else {
 			command.setStatus(Status.Done);
 			if (result != null) {
-				command.setResult(result instanceof String ?
-					(String)result :
-					mapper.writeValueAsString(result)
-				);
+				command.setResult(mapper.writeValueAsString(result));
 			}
 		}
 		command = commandRepository.save(command);

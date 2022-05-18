@@ -21,7 +21,7 @@ public class WorkflowConfigurationService {
 	public void initialize() throws IOException {
 		var mapper = new ObjectMapper(new YAMLFactory());
 		try(var stream = getClass().getResourceAsStream("/workflows.yaml")) {
-			var workflows = mapper .readValue(stream, WorkflowsProperties.class);
+			var workflows = mapper.readValue(stream, WorkflowsProperties.class);
 			this.workflows = workflows.toWorkflowDescriptors();
 			this.workflowsByUuid = this.workflows.values().stream().collect(Collectors.toMap(WorkflowDescriptor::getId, w -> w));
 		}

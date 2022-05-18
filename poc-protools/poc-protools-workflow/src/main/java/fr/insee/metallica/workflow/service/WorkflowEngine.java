@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -119,11 +121,11 @@ public class WorkflowEngine {
 	}
 
 	public String serialize(Object context) throws JsonProcessingException {
-		return context instanceof String ? (String) context : mapper.writeValueAsString(context);
+		return mapper.writeValueAsString(context);
 	}
 
 	public ObjectNode deserialize(String context) throws JsonProcessingException {
-		return deserialize(context, ObjectNode.class);
+		return mapper.readValue(context, ObjectNode.class);
 	}
 
 	public <T> T deserialize(String context, Class<T> clazz) throws JsonProcessingException {
@@ -151,7 +153,7 @@ public class WorkflowEngine {
 		if (serializedObject == null) {
 			return context;
 		}
-		context.set(key, deserialize(serializedObject));
+		context.set(key, deserialize(serializedObject, JsonNode.class));
 		return context;
 	}
 

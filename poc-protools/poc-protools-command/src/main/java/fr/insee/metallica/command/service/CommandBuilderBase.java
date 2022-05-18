@@ -20,20 +20,20 @@ public abstract class CommandBuilderBase<T> {
 		command.setPayload(payload);
 		return getThis();
 	}
-	public T payload(Object payload) throws JsonProcessingException { 
-		command.setPayload(payload == null ? null :
-			payload instanceof String ? (String) payload :
-			this.commandService.mapper.writeValueAsString(payload));
+	public T payload(Object payload) throws JsonProcessingException {
+		if (payload instanceof String) {
+			return payload((String)payload); 
+		}
+		command.setPayload(this.commandService.mapper.writeValueAsString(payload));
 		return getThis();
 	}
+
 	public T context(String context) { 
 		command.setContext(context);
 		return getThis();
 	}
 	public T context(Object context) throws JsonProcessingException {
-		command.setContext(context == null ? null :
-				context instanceof String ? (String) context :
-				this.commandService.mapper.writeValueAsString(context));
+		command.setContext(this.commandService.mapper.writeValueAsString(context));
 		return getThis();
 	}
 	public T scheduledTime(LocalDateTime date) throws JsonProcessingException {
