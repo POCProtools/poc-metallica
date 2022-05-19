@@ -1,0 +1,24 @@
+{
+  "name": "Metallica",
+  "prefix": "metallica",
+  "uri": "http://metallica",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "associations": [],
+  "types": [
+    {
+      "name": "MetallicaServiceTask",
+      "extends": [
+        "bpmn:ServiceTask"
+      ],
+      "properties": [
+        {
+          "name": "metallicaImplementation",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    }
+  ]
+}
