@@ -1,5 +1,7 @@
 package fr.insee.metallica.workflow.command.processor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.transaction.Transactional;
@@ -19,11 +21,11 @@ import fr.insee.metallica.command.service.CommandService;
 import fr.insee.metallica.workflow.repository.WorkflowRepository;
 import fr.insee.metallica.workflow.service.WorkflowExecutionService;
 
-public class SubWorkflowLauncherProcessor extends TypedAbstractCommandProcessor<SubWorkflowContext> {
-	public final static String Name = "SubWorkflow";
+public class MultipleSubWorkflowLauncherProcessor extends TypedAbstractCommandProcessor<MultipleSubWorkflowContext> {
+	public final static String Name = "MultipleSubWorkflow";
 	
-	public SubWorkflowLauncherProcessor() {
-		super(Name, SubWorkflowContext.class);
+	public MultipleSubWorkflowLauncherProcessor() {
+		super(Name, MultipleSubWorkflowContext.class);
 	}
 	
 	@Autowired
@@ -40,36 +42,44 @@ public class SubWorkflowLauncherProcessor extends TypedAbstractCommandProcessor<
 
 	@Override
 	@Transactional
-	public UUID process(Command command, SubWorkflowContext payload) throws CommandExecutionException {
+	public List<UUID> process(Command command, MultipleSubWorkflowContext payload) throws CommandExecutionException {
 		if (command.getResultFetcher() != null) {
-			return processCommand(payload);
+			List<UUID> uuids = new ArrayList<>(payload.getContexts().size());
+			for (var context : payload.getContexts()) {
+				uuids.add(processCommand(payload.getWorkflowName(), context));
+			}
+				
+			return uuids;
 		} else {
 			return fetchResponse(command);
 		}
 	}
 
-	private UUID fetchResponse(Command command) throws CommandExecutionAbortException, CommandExecutionRetryException {
+	private List<UUID> fetchResponse(Command command) throws CommandExecutionAbortException, CommandExecutionRetryException {
 		try {
-			UUID workflowId = UUID.fromString(mapper.readValue(command.getOriginalCommand().getResult(), JsonNode.class).textValue());
-			var workflow = workflowRepository.findById(workflowId).orElseThrow(() -> new CommandExecutionAbortException("Cannot find workflow " + workflowId));
-			switch(workflow.getStatus()) {
-			case Success:
-				return workflowId;
-			case Error:
-				throw new CommandExecutionAbortException("Le workflow " + workflowId + " ended in error");
-			case Running:
-				throw new CommandExecutionRetryException("The workflow "+ workflowId + " is not over yet");
-			default:
-				throw new CommandExecutionAbortException("Le workflow " + workflowId + " is not in a known status");
+			UUID[] workflowIds = mapper.readValue(command.getOriginalCommand().getResult(), UUID[].class);
+			for (var workflowId : workflowIds) {
+				var workflow = workflowRepository.findById(workflowId).orElseThrow(() -> new CommandExecutionAbortException("Cannot find workflow " + workflowId));
+				switch(workflow.getStatus()) {
+				case Success:
+					break;
+				case Error:
+					throw new CommandExecutionAbortException("Le workflow " + workflowId + " ended in error");
+				case Running:
+					throw new CommandExecutionRetryException("The workflow "+ workflowId + " is not over yet");
+				default:
+					throw new CommandExecutionAbortException("Le workflow " + workflowId + " is not in a known status");
+				}
 			}
+			return List.of(workflowIds);
 		} catch (JsonProcessingException e) {
 			throw new CommandExecutionAbortException("Cannot find workflow " + command.getOriginalCommand().getResult());
 		}
 	}
 
-	private UUID processCommand(SubWorkflowContext payload) throws CommandExecutionException {
+	private UUID processCommand(String workflowName, JsonNode context) throws CommandExecutionException {
 		try {
-			var workflow = workflowExecutionService.startWorkflow(payload.getWorkflowName(), payload.getContext());
+			var workflow = workflowExecutionService.startWorkflow(workflowName, context);
 			return workflow.getId();
 		} catch (JsonProcessingException e) {
 			throw new CommandExecutionException("could not start workflow: " + e.getMessage(), e);

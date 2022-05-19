@@ -29,7 +29,7 @@ public class WorkflowTest {
 
 	@Autowired
 	private ObjectMapper mapper;
-
+	
 	@Test
 	public void testParse() throws JsonProcessingException {
 		List<String> result = new ArrayList<>(); 
@@ -59,6 +59,19 @@ public class WorkflowTest {
 			.join();
 		
 		assert result.get(0).equals("testSubWorkflow") ;
+	}
+
+	@Test
+	public void testMultipleSubworkflow() throws JsonProcessingException {
+		List<String> result = new ArrayList<>(); 
+		commandProcessorService.registerProcessor("TestMultipleSubworkflowProcessor", command -> result.add(command.getPayload()));
+		
+		workflowExecutionService.executeWorkflow("TestMultipleSubworkflow", Map.of())
+			.join();
+		
+		assert result.contains("testSubWorkflow1");
+		assert result.contains("testSubWorkflow2");
+		assert result.contains("testSubWorkflow3");
 	}
 
 	

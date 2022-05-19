@@ -1,16 +1,18 @@
 package fr.insee.metallica.workflow.command.processor;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
-class SubWorkflowContext {
+class MultipleSubWorkflowContext {
 	private String workflowName;
-	private JsonNode context;
+	private List<JsonNode> contexts;
 	
-	public JsonNode getContext() {
-		return context;
+	public List<JsonNode> getContexts() {
+		return contexts;
 	}
-	public void setContext(JsonNode context) {
-		this.context = context;
+	public void setContexts(List<JsonNode> context) {
+		this.contexts = context;
 	}
 	public String getWorkflowName() {
 		return workflowName;

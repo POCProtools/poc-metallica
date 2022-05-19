@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.metallica.command.configuration.EnableCommand;
 import fr.insee.metallica.workflow.command.processor.EnrichContextProcessor;
+import fr.insee.metallica.workflow.command.processor.MultipleSubWorkflowLauncherProcessor;
 import fr.insee.metallica.workflow.command.processor.SubWorkflowLauncherProcessor;
 import fr.insee.metallica.workflow.domain.Workflow;
 import fr.insee.metallica.workflow.repository.WorkflowRepository;
@@ -69,5 +70,10 @@ public class WorkflowConfiguration {
 	@Bean
 	public SubWorkflowLauncherProcessor subWorkflowLauncherProcessor() {
 		return new SubWorkflowLauncherProcessor();
+	}
+	
+	@Bean
+	public MultipleSubWorkflowLauncherProcessor multipleSubWorkflowLauncherProcessor() {
+		return new MultipleSubWorkflowLauncherProcessor();
 	}
 }

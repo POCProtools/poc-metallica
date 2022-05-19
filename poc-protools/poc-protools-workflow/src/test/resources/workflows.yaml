@@ -34,13 +34,25 @@ workflows:
 - name: TestSubworkflow
   id: "00000000-0003-0000-0000-000000000000"
   steps:
-  - label: "call su workflow context"
+  - label: "call sub workflow context"
     id: "00000000-0003-0000-0000-000000000001"
-    type: SubWorkflowLauncherProcessor
+    type: SubWorkflow
     payloadTemplate: |
       {
         "context": {"value": "testSubWorkflow"},
         "workflowName": "SubWorkflowTestSubworkflow"
+      }
+     
+- name: TestMultipleSubworkflow
+  id: "00000000-0005-0000-0000-000000000000"
+  steps:
+  - label: "call su workflow context"
+    id: "00000000-0005-0000-0000-000000000001"
+    type: MultipleSubWorkflow
+    payloadTemplate: |
+      {
+        "contexts": [{"value": "testSubWorkflow1"}, {"value": "testSubWorkflow2"}, {"value": "testSubWorkflow3"}],
+        "workflowName": "MultipleSubWorkflowTestSubworkflow"
       }
 
 - name: SubWorkflowTestSubworkflow
@@ -50,3 +62,13 @@ workflows:
     id: "00000000-0004-0000-0000-000000000001"
     type: TestSubworkflowProcessor
     payloadTemplate: "${context.value}"
+
+    
+- name: MultipleSubWorkflowTestSubworkflow
+  id: "00000000-0006-0000-0000-000000000000"
+  steps:
+  - label: "call su workflow context"
+    id: "00000000-0006-0000-0000-000000000001"
+    type: TestMultipleSubworkflowProcessor
+    payloadTemplate: "${context.value}"
+    
