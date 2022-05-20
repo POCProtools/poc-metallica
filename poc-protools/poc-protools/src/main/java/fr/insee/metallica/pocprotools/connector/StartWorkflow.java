@@ -10,7 +10,7 @@ public class StartWorkflow implements Connector {
 	@Override
 	public IntegrationContext apply(IntegrationContext t) {
 		System.out.println("ca marche");
-		return null;
+		return t;
 	}
 
 }
