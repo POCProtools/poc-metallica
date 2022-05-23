@@ -1,6 +1,7 @@
 package fr.insee.metallica.workflow.service;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +34,10 @@ public class WorkflowConfigurationService {
 	
 	public WorkflowDescriptor getWorkflow(UUID uuid) {
 		return workflowsByUuid.get(uuid);
+	}
+
+	public Collection<WorkflowDescriptor> getWorkflows() {
+		return workflowsByUuid.values();
 	}
 	
 	public void addWorkflow(String key, WorkflowDescriptor desc) {

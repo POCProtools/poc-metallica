@@ -8,7 +8,7 @@ const basePath = '.';
 const absoluteBasePath = path.resolve(path.join(__dirname, basePath));
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: './app/index.js',
   output: {
     path: path.resolve(__dirname, 'public'),
@@ -63,10 +63,10 @@ module.exports = {
       absoluteBasePath
     ]
   },
-  optimization: {
-    minimize: true,
-    minimizer: [new TerserPlugin()],
-  },
+  // optimization: {
+  //   minimize: true,
+  //   minimizer: [new TerserPlugin()],
+  // },
   plugins: [
     new CopyPlugin({
       patterns: [

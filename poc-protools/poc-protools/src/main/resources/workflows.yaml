@@ -99,3 +99,11 @@ workflows:
          "rescheduleStatus": [202],
          "method": "GET"
         }
+        
+- name: Echo
+  id: "00000000-0006-0000-0000-000000000000"
+  steps:
+  - label: "display something"
+    id: "00000000-0006-0000-0000-000000000001"
+    type: Print
+    payloadTemplate: "we made it"

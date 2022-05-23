@@ -3,10 +3,12 @@ import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 import {
   BpmnPropertiesPanelModule,
-  BpmnPropertiesProviderModule
+  BpmnPropertiesProviderModule,
+  ZeebeDescriptionProvider,
+  ZeebePropertiesProviderModule
 } from 'bpmn-js-properties-panel';
 import metallicaPropertiesProviderModule from './provider/metallica';
-import metallicaModdleDescriptor from './descriptors/metallica';
+import activitiModdleDescriptor from './descriptors/activiti';
 
 import {
   debounce
@@ -26,10 +28,12 @@ var bpmnModeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
-    metallicaPropertiesProviderModule
+    metallicaPropertiesProviderModule,
+    ZeebeDescriptionProvider,
+    ZeebePropertiesProviderModule
   ],
   moddleExtensions: {
-    metallica: metallicaModdleDescriptor
+    metallica: activitiModdleDescriptor
   }
 });
 

@@ -1,23 +1,24 @@
 {
-  "name": "Metallica",
-  "prefix": "metallica",
-  "uri": "http://metallica",
+  "name": "Activiti",
+  "prefix": "activiti",
+  "uri": "http://activiti",
   "xml": {
     "tagAlias": "lowerCase"
   },
   "associations": [],
   "types": [
     {
-      "name": "MetallicaServiceTask",
+      "name": "ActivitiServiceTask",
       "extends": [
         "bpmn:ServiceTask"
       ],
       "properties": [
         {
-          "name": "metallicaImplementation",
+          "name": "businessKey",
           "isAttr": true,
           "type": "String"
         }
+
       ]
     }
   ]

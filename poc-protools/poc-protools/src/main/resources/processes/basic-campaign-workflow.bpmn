@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0v7t65f" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="9.0.3">
-  <bpmn:process id="categorizeProcess" name="categorizeProcess" isExecutable="true">
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0v7t65f" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="9.0.3">
+  <bpmn:process id="CampaignWeb" name="Campaign" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_10pa1fn</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_10pa1fn" sourceRef="StartEvent_1" targetRef="CampagnDefinition" />
-    <bpmn:serviceTask id="GenerateSample" name="Creation de l&#39;Echantillon" implementation="StartWorkflow">
+    <bpmn:serviceTask id="GenerateSample" name="Creation de l&#39;Echantillon" implementation="startWorkflow" activiti:businessKey="Echo">
       <bpmn:incoming>Flow_0tu6g7u</bpmn:incoming>
       <bpmn:outgoing>Flow_1xqgnpl</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -14,7 +14,7 @@
       <bpmn:incoming>Flow_1u8haz4</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1u8haz4" sourceRef="CreateUsers" targetRef="Event_0pbmld2" />
-    <bpmn:serviceTask id="CreateUsers" name="Création des utilisateur" implementation="StartWorkflow">
+    <bpmn:serviceTask id="CreateUsers" name="Création des utilisateur" implementation="startWorkflow">
       <bpmn:incoming>Flow_1xqgnpl</bpmn:incoming>
       <bpmn:outgoing>Flow_1u8haz4</bpmn:outgoing>
     </bpmn:serviceTask>

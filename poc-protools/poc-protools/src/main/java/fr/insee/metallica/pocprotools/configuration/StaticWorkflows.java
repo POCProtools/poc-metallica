@@ -14,6 +14,7 @@ import fr.insee.metallica.workflow.service.WorkflowConfigurationService;
 public class StaticWorkflows {
 	static public final WorkflowDescriptor CodeConfigurationGeneratePasswordAndSendMail = WorkflowDescriptor.Builder()
 			.id(UUID.fromString("eafa3d1b-644b-47dc-b803-074f08f01e2a"))
+			.name("CodeConfigurationGeneratePasswordAndSendMail")
 			.addStep()
 				.label("generate password")
 				.id(UUID.fromString("32e4b8a3-5383-4cda-8881-46c1fff7443a"))
