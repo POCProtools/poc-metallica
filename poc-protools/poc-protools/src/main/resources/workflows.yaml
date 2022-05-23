@@ -30,6 +30,7 @@ workflows:
   - label: "generate password"
     id: "00000000-0002-0000-0000-000000000003"
     type: ServiceHttp
+    skip: ""
     metadatas: 
       service: "send-mail"
       path: "/send-mail"
@@ -107,3 +108,34 @@ workflows:
     id: "00000000-0006-0000-0000-000000000001"
     type: Print
     payloadTemplate: "we made it"
+
+    
+- name: FetchSample
+  id: "00000000-0007-0000-0000-000000000000"
+  steps:
+  - label: fetch sample
+    id: "00000000-0007-0000-0000-000000000001"
+    type: MockReturn20000UniteEnquete
+    
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

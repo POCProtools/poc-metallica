@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:activiti="http://activiti.org/bpmn" id="Definitions_0v7t65f" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="9.0.3">
+  <bpmn:process id="ComplexCampaignWeb" name="Campaign" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_10pa1fn</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_10pa1fn" sourceRef="StartEvent_1" targetRef="GenerateSample" />
+    <bpmn:serviceTask id="GenerateSample" name="Récupération échantillon" implementation="FetchSample" activiti:businessKey="Echo">
+      <bpmn:incoming>Flow_10pa1fn</bpmn:incoming>
+      <bpmn:outgoing>Flow_1xqgnpl</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1xqgnpl" sourceRef="GenerateSample" targetRef="CreateUsers" />
+    <bpmn:endEvent id="Event_0pbmld2">
+      <bpmn:incoming>Flow_0qn1gvp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="CreateUsers" name="Création des UEs" implementation="CreateUEs">
+      <bpmn:incoming>Flow_1xqgnpl</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0qn1gvp" sourceRef="Event_1nec233" targetRef="Event_0pbmld2" />
+    <bpmn:boundaryEvent id="Event_1nec233" attachedToRef="CreateUsers">
+      <bpmn:outgoing>Flow_0qn1gvp</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_17x31an" messageRef="Message_32eb07k" />
+    </bpmn:boundaryEvent>
+    <bpmn:startEvent id="Event_0llwifp">
+      <bpmn:outgoing>Flow_05hx32g</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_10vd8y1" signalRef="Signal_1gm9ebk" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_05hx32g" sourceRef="Event_0llwifp" targetRef="Activity_0wky5c0" />
+    <bpmn:sequenceFlow id="Flow_0zpk2cd" sourceRef="Activity_0wky5c0" targetRef="Event_0p8cerh" />
+    <bpmn:endEvent id="Event_0p8cerh">
+      <bpmn:incoming>Flow_0zpk2cd</bpmn:incoming>
+      <bpmn:signalEventDefinition id="SignalEventDefinition_0awe3pj" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Activity_0wky5c0" name="Creation une UE" implementation="CreateUE">
+      <bpmn:incoming>Flow_05hx32g</bpmn:incoming>
+      <bpmn:outgoing>Flow_0zpk2cd</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmn:message id="Message_32eb07k" name="Message_All_UE_Done" />
+  <bpmn:signal id="Signal_1gm9ebk" name="Start_UE" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="CampaignWeb">
+      <bpmndi:BPMNEdge id="Flow_1xqgnpl_di" bpmnElement="Flow_1xqgnpl">
+        <di:waypoint x="230" y="120" />
+        <di:waypoint x="330" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10pa1fn_di" bpmnElement="Flow_10pa1fn">
+        <di:waypoint x="38" y="120" />
+        <di:waypoint x="130" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qn1gvp_di" bpmnElement="Flow_0qn1gvp">
+        <di:waypoint x="448" y="120" />
+        <di:waypoint x="552" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05hx32g_di" bpmnElement="Flow_05hx32g">
+        <di:waypoint x="38" y="250" />
+        <di:waypoint x="90" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zpk2cd_di" bpmnElement="Flow_0zpk2cd">
+        <di:waypoint x="190" y="250" />
+        <di:waypoint x="242" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="2" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19n6o93_di" bpmnElement="CreateUsers">
+        <dc:Bounds x="330" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1k0viiv_di" bpmnElement="GenerateSample">
+        <dc:Bounds x="130" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0pbmld2_di" bpmnElement="Event_0pbmld2">
+        <dc:Bounds x="552" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_092v6l4_di" bpmnElement="Event_0llwifp">
+        <dc:Bounds x="2" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hll0nd_di" bpmnElement="Event_0p8cerh">
+        <dc:Bounds x="242" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ukqkvy_di" bpmnElement="Activity_0wky5c0">
+        <dc:Bounds x="90" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0s6yn8h_di" bpmnElement="Event_1nec233">
+        <dc:Bounds x="412" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
