@@ -1,5 +1,6 @@
 package fr.insee.metallica.workflow.service;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -7,6 +8,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.insee.metallica.workflow.domain.Workflow;
 import fr.insee.metallica.workflow.domain.WorkflowStep;
 import fr.insee.metallica.workflow.domain.WorkflowStep.Status;
 import fr.insee.metallica.workflow.dto.WorkflowStatusDto;
@@ -23,6 +25,13 @@ public class WorkflowStatusService {
 	
 	@Autowired
 	private WorkflowStepRepository workflowStepRepository;
+	
+	@Transactional
+	public List<WorkflowStatusDto> getAllStatus() {
+		var workflows = workflowRepository.findAll().stream().map(Workflow::getId).collect(Collectors.toSet());
+		return workflows.stream().map(this::getStatus).collect(Collectors.toList());
+	}
+
 	
 	@Transactional
 	public WorkflowStatusDto getStatus(UUID id) {

@@ -69,6 +69,9 @@ public class SimpleTemplateService {
 	}
 	
 	public Object evaluateTemplate(String template, Object context, Object metadatas) {
+		if (template == null) {
+			return null;
+		}
 		return evaluate(parseTemplate(template), context, metadatas);
 	}
 

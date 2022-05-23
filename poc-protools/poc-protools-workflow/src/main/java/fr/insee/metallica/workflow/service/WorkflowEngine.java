@@ -197,9 +197,8 @@ public class WorkflowEngine {
 		
 		startStep(step, stepDescriptor, workflowDescriptor, context);
 	}
-
 	
-	private void startStep(WorkflowStep step, StepDescriptor stepDescriptor, WorkflowDescriptor workflowDescriptor, Object context) throws JsonProcessingException {
+	private void startStep(WorkflowStep step, StepDescriptor stepDescriptor, WorkflowDescriptor workflowDescriptor, ObjectNode context) throws JsonProcessingException {
 		var metadatas = new HashMap<>();
 		for (var entry : stepDescriptor.getMetadatas().entrySet()) {
 			var value = entry.getValue();
@@ -207,6 +206,17 @@ public class WorkflowEngine {
 				metadatas.put(entry.getKey(), simpleTemplateService.evaluateTemplate((String) value, context, metadatas));
 			} else {
 				metadatas.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		var shouldSkip = simpleTemplateService.evaluateTemplate(stepDescriptor.getSkip(), context, metadatas);
+		
+		if (shouldSkip != null && shouldSkip instanceof Boolean && ((Boolean)shouldSkip)) {
+			if (!stepDescriptor.isFinalStep()) {
+				var nextStep = createStep(step.getWorkflow(), stepDescriptor.getNextStep());
+				startStep(nextStep, serialize(context.get("previousResult")));
+			} else {
+				done(step.getWorkflow(), step, context.get("previousResult"));
 			}
 		}
 		

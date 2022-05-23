@@ -11,14 +11,15 @@ import org.springframework.context.annotation.Configuration;
 import fr.insee.metallica.pocprotools.connector.AbstractStartWorkflow;
 import fr.insee.metallica.workflow.configuration.descriptor.WorkflowDescriptor;
 import fr.insee.metallica.workflow.service.WorkflowConfigurationService;
+import fr.insee.metallica.workflow.service.WorkflowExecutionService;
 
 @Configuration
 public class WorkflowBeans {
 	@Bean
-	public Map<String, Connector> workflowConnectors(WorkflowConfigurationService workflowConfigurationService, ConfigurableListableBeanFactory beanFactory) {
+	public Map<String, Connector> workflowConnectors(WorkflowConfigurationService workflowConfigurationService, WorkflowExecutionService workflowExecutionService, ConfigurableListableBeanFactory beanFactory) {
 		var map = new HashMap<String, Connector>(); 
 		workflowConfigurationService.getWorkflows().forEach(w -> {
-			var singleton = new AbstractStartWorkflow() {
+			var singleton = new AbstractStartWorkflow(workflowExecutionService) {
 				public WorkflowDescriptor getDescriptor() { return w; }
 			};
 			map.put(w.getName(), singleton);

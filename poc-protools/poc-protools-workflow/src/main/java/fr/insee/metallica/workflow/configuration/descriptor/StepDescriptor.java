@@ -19,6 +19,8 @@ public class StepDescriptor {
 	
 	private String payloadTemplate;
 	
+	private String skip;
+	
 	private StepDescriptor nextStep;
 
 	private int limit;
@@ -70,6 +72,10 @@ public class StepDescriptor {
 	public StepDescriptor getAsyncResult() {
 		return asyncResult;
 	}
+	
+	public String getSkip() {
+		return skip;
+	}
 
 	private StepDescriptor() {
 	}
@@ -80,6 +86,7 @@ public class StepDescriptor {
 	
 	public interface StepBuilderContract<T extends StepBuilderContract<?>> {
 		T id(UUID stepId);
+		T skip(String shouldSkip);
 		T label(String label);
 		T payloadTemplate(String layoutTemplate);
 		T type(String type);
@@ -179,6 +186,12 @@ public class StepDescriptor {
 		public T limit(String limitKey, int limit) {
 			descriptor.limit = limit;
 			descriptor.limitKey = limitKey;
+			return getThis();
+		}
+		
+		@Override
+		public T skip(String shouldSkip) {
+			descriptor.skip = shouldSkip;
 			return getThis();
 		}
 	}

@@ -1,5 +1,6 @@
 package fr.insee.metallica.pocprotools.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -89,5 +90,11 @@ public class StartWorkflowController {
 	@ResponseBody
 	public WorkflowStatusDto getStatus(@PathVariable("id") UUID id) {
 		return workflowStatusService.getStatus(id);
+	}
+
+	@GetMapping(path = "/workflow")
+	@ResponseBody
+	public List<WorkflowStatusDto> getAllStatus() {
+		return workflowStatusService.getAllStatus();
 	}
 }
