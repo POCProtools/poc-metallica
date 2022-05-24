@@ -22,7 +22,9 @@ public class WorkflowsProperties {
 	private List<WorkflowProperties> workflows;
 
 	public static class WorkflowProperties { 
+		@JsonProperty(required = true)
 		private UUID id;
+		@JsonProperty(required = true)
 		private String name;
 		private List<WorkflowStepProperties> steps;
 		public UUID getId() {
@@ -73,28 +75,27 @@ public class WorkflowsProperties {
 	}
 	
 	public static class WorkflowStepProperties {
+		@JsonProperty(required = true)
 		UUID id;
+		@JsonProperty(required = true)
 		String label;
+		@JsonProperty(required = true)
 		String type;
 		int limit;
 		String limitKey;
 	    String payloadTemplate;
+	    String skip;
 	    
-		@JsonProperty(required = false)
 		Map<String, String> metadatas = new HashMap<>();
-	    @JsonProperty(required = false)
 	    WorkflowStepProperties asyncResult;
-
-		public UUID getId() {
-			return id;
-		}
 		
 		private void commonBuild(StepBuilderBase<?> b) {
 			b.id(id)
 			.label(label)
 			.type(type)
 			.limit(limitKey, limit)
-			.payloadTemplate(payloadTemplate);
+			.payloadTemplate(payloadTemplate)
+			.skip(skip);
 						
 			metadatas.forEach(b::addMetadatas);
 		}
@@ -111,46 +112,43 @@ public class WorkflowsProperties {
 			commonBuild(b);			
 			return b.build();
 		}
-		
+
 		public void setId(UUID id) {
 			this.id = id;
 		}
-		public String getLabel() {
-			return label;
-		}
+
 		public void setLabel(String label) {
 			this.label = label;
 		}
-		public String getType() {
-			return type;
-		}
+
 		public void setType(String type) {
 			this.type = type;
 		}
-		public Map<String, String> getMetadatas() {
-			return metadatas;
-		}
-		public void setMetadatas(Map<String, String> metadatas) {
-			this.metadatas = metadatas;
-		}
-		public String getPayloadTemplate() {
-			return payloadTemplate;
-		}
-		public void setPayloadTemplate(String payloadTemplate) {
-			this.payloadTemplate = payloadTemplate;
-		}
-		public int getLimit() {
-			return limit;
-		}
+
 		public void setLimit(int limit) {
 			this.limit = limit;
 		}
-		public String getLimitKey() {
-			return limitKey;
-		}
+
 		public void setLimitKey(String limitKey) {
 			this.limitKey = limitKey;
 		}
+
+		public void setPayloadTemplate(String payloadTemplate) {
+			this.payloadTemplate = payloadTemplate;
+		}
+
+		public void setSkip(String skip) {
+			this.skip = skip;
+		}
+
+		public void setMetadatas(Map<String, String> metadatas) {
+			this.metadatas = metadatas;
+		}
+
+		public void setAsyncResult(WorkflowStepProperties asyncResult) {
+			this.asyncResult = asyncResult;
+		}
+		
 		
 	}
 

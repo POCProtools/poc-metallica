@@ -3,7 +3,6 @@ package fr.insee.metallica.pocprotools.configuration;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

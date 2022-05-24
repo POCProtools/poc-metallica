@@ -160,6 +160,7 @@ public class WorkflowEngine {
 	public void done(Workflow workflow, WorkflowStep step, Object result) {
 		workflow.setStatus(Workflow.Status.Success);
 		this.workflowRepository.save(workflow);
+		log.info("The workflow {} {} ended with a sucess", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId());
 		publish(workflow, step, result);
 	}
 
@@ -167,6 +168,7 @@ public class WorkflowEngine {
 	public void error(Workflow workflow, WorkflowStep step, Object message) {
 		workflow.setStatus(Workflow.Status.Error);
 		this.workflowRepository.save(workflow);
+		log.info("The workflow {} {} ended with an error {}", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId(), message);
 		publish(workflow, step, message);
 	}
 	

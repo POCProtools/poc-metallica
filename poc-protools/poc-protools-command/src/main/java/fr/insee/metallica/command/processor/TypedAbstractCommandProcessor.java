@@ -26,7 +26,7 @@ public abstract class TypedAbstractCommandProcessor<TPayload> extends AbstractCo
 			var payload = mapper.readValue(command.getPayload(), payloadType);
 			return process(command, payload);
 		} catch (JsonProcessingException e) {
-			throw new CommandExecutionAbortException("Could not serialize body", e);
+			throw new CommandExecutionAbortException("Could not deserialize body", e);
 		}
 	}
 

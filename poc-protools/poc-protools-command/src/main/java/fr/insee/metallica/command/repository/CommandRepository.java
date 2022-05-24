@@ -77,7 +77,7 @@ public interface CommandRepository extends JpaRepository<Command, UUID>{
 	
 	@Query(
 		nativeQuery = true,
-		value = "Update command set last_heart_beat = :lastHeartBeat where id = :id"
+		value = "Update command set last_heart_beat = :lastHeartBeat where id = :id and status = 'Processing'"
 	)
 	@Modifying
 	@Transactional
