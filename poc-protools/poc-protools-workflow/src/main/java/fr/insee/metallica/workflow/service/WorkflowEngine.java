@@ -52,6 +52,8 @@ public class WorkflowEngine {
 	
 	private final Map<UUID, List<WorkflowEventListener>> listeners = new HashMap<>();
 	
+	private final Map<Workflow.Status, List<WorkflowEventListener>> statusListeners = new HashMap<>();
+	
 	@PostConstruct
 	public void init() {
 		commandService.subscribe((command, body) -> {
@@ -81,7 +83,7 @@ public class WorkflowEngine {
 				
 				if (command.getStatus() == Command.Status.Error) {
 					step.setStatus(Status.Error);
-					error(step.getWorkflow(), step, body);
+					error(step.getWorkflow(), step, (body instanceof String) ? (String) body : mapper.writeValueAsString(body));
 				} else if (command.getStatus() == Command.Status.Retry) {
 					step.setStatus(Status.Retry);
 				} else if (command.getStatus() == Command.Status.Processing) {
@@ -157,15 +159,15 @@ public class WorkflowEngine {
 	}
 
 	@Transactional
-	public void done(Workflow workflow, WorkflowStep step, Object result) {
+	public void done(Workflow workflow, WorkflowStep step, String serializedResult) {
 		workflow.setStatus(Workflow.Status.Success);
 		this.workflowRepository.save(workflow);
 		log.info("The workflow {} {} ended with a sucess", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId());
-		publish(workflow, step, result);
+		publish(workflow, step, serializedResult);
 	}
 
 	@Transactional
-	public void error(Workflow workflow, WorkflowStep step, Object message) {
+	public void error(Workflow workflow, WorkflowStep step, String message) {
 		workflow.setStatus(Workflow.Status.Error);
 		this.workflowRepository.save(workflow);
 		log.info("The workflow {} {} ended with an error {}", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId(), message);
@@ -182,8 +184,21 @@ public class WorkflowEngine {
 		}
 	}
 	
-	public void publish(Workflow workflow, WorkflowStep step, Object result) {
-		listeners.getOrDefault(workflow.getId(), List.of()).forEach(l -> l.onEvent(workflow, step, result));
+	public void subscribe(WorkflowEventListener listener, Workflow.Status... listenedStatus) {
+		synchronized (statusListeners) {
+			for (var status : listenedStatus) {
+				var listeners = this.statusListeners.get(status);
+				if (listeners == null) {
+					this.statusListeners.put(status, listeners = new LinkedList<>());
+				}
+				listeners.add(listener);
+			}
+		}
+	}
+	
+	public void publish(Workflow workflow, WorkflowStep step, String serializedResult) {
+		listeners.getOrDefault(workflow.getId(), List.of()).forEach(l -> l.onEvent(workflow, step, serializedResult));
+		statusListeners.getOrDefault(workflow.getStatus(), List.of()).forEach(l -> l.onEvent(workflow, step, serializedResult));
 	}
 	
 	
@@ -218,7 +233,7 @@ public class WorkflowEngine {
 				var nextStep = createStep(step.getWorkflow(), stepDescriptor.getNextStep());
 				startStep(nextStep, serialize(context.get("previousResult")));
 			} else {
-				done(step.getWorkflow(), step, context.get("previousResult"));
+				done(step.getWorkflow(), step, serialize(context.get("previousResult")));
 			}
 		}
 		

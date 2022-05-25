@@ -57,6 +57,7 @@ public class MultipleSubWorkflowLauncherProcessor extends TypedAbstractCommandPr
 
 	private List<UUID> fetchResponse(Command command) throws CommandExecutionAbortException, CommandExecutionRetryException {
 		try {
+			//todo go faster with bulk fetch workflow status only
 			UUID[] workflowIds = mapper.readValue(command.getOriginalCommand().getResult(), UUID[].class);
 			for (var workflowId : workflowIds) {
 				var workflow = workflowRepository.findById(workflowId).orElseThrow(() -> new CommandExecutionAbortException("Cannot find workflow " + workflowId));

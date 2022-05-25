@@ -16,7 +16,7 @@ workflows:
     
   - label: "Add string to context"
     id: "00000000-0002-0000-0000-000000000003"
-    type: EnrichContextProcessor
+    type: EnrichContext
     payloadTemplate: |
       {"enrich": "valeur de context"}
     

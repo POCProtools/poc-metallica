@@ -15,7 +15,7 @@ import fr.insee.metallica.workflow.repository.WorkflowRepository;
 import fr.insee.metallica.workflow.service.WorkflowEngine;
 
 public class EnrichContextProcessor extends TypedAbstractCommandProcessor<ObjectNode> {
-	public final static String Name = "EnrichContextProcessor";
+	public final static String Name = "EnrichContext";
 	
 	@Autowired
 	private WorkflowEngine workflowService;
