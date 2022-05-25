@@ -1,0 +1,61 @@
+workflows:
+- name: FetchSample
+  id: "00000001-0007-0000-0000-000000000000"
+  steps:
+  - label: fetch sample
+    id: "00000001-0007-0000-0000-000000000001"
+    type: MockReturn20000UniteEnquete
+
+- name: CreateUEs
+  id: "00000001-0008-0000-0000-000000000000"
+  steps:
+  - label: launch every UE
+    type: MultipleSubWorkflow
+    payloadTemplate: |
+      {
+        "contexts": ${JSON(context.workflowResult)},
+        "workflowName": "LaunchUE"
+      }
+      
+- name: LaunchUE
+  id: "00000001-0009-0000-0000-000000000000"
+  steps:
+  - label: start one UE workflow 
+    id: "00000001-0009-0000-0000-000000000001"
+    type: ActivitiMessage
+    payloadTemplate: |
+      {
+        "name": "Start_UE",
+        "context": ${JSON(context)}
+      }
+      
+- name: CreateUE
+  id: "00000001-000a-0000-0000-000000000000"
+  steps:
+  - label: one ue workflow
+    id: "00000001-000a-0000-0000-000000000001"
+    type: Print
+    payloadTemplate: ${context}
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

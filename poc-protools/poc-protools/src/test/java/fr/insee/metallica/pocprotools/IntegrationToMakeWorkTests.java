@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import fr.insee.metallica.pocprotools.controller.StartWorkflowController;
 
 @SpringBootTest
-@Disabled
+//@Disabled
 class IntegrationToMakeWorkTests {
 	@Autowired
 	private ProtoolsClient protoolsClient;	
@@ -82,7 +82,7 @@ class IntegrationToMakeWorkTests {
 	@Test
 	void testCharge() throws Throwable {
 		var users = new HashSet<String>();
-		for (int i = 0 ; i < 1000; i++) {
+		for (int i = 0 ; i < 500; i++) {
 			var dto = new StartWorkflowController.UsernameDto();
 			dto.setUsername("charge-" + RandomStringUtils.randomAlphabetic(10));
 			users.add(dto.getUsername());

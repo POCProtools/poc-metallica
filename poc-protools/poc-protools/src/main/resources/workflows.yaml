@@ -21,7 +21,7 @@ workflows:
     
   - label: "Add generated to context"
     id: "00000000-0002-0000-0000-000000000002"
-    type: EnrichContextProcessor
+    type: EnrichContext
     metadatas: 
       password: "${context.previousResult.password}"
     payloadTemplate: |
@@ -67,7 +67,7 @@ workflows:
     
   - label: "Add generated to context"
     id: "00000000-0001-0000-0000-000000000002"
-    type: EnrichContextProcessor
+    type: EnrichContext
     metadatas: 
       password: "${context.previousResult.password}"
     payloadTemplate: |
@@ -109,71 +109,3 @@ workflows:
     type: Print
     payloadTemplate: "we made it"
 
-    
-- name: FetchSample
-  id: "00000000-0007-0000-0000-000000000000"
-  steps:
-  - label: fetch sample
-    id: "00000000-0007-0000-0000-000000000001"
-    type: MockReturn20000UniteEnquete
-  - label: add UEs to context
-    id: "00000000-0007-0000-0000-000000000001"
-    type: MockReturn20000UniteEnquete
-
-- name: CreateUEs
-  id: "00000000-0008-0000-0000-000000000000"
-  steps:
-  - label: fetch sample
-    id: "00000000-0008-0000-0000-000000000001"
-    type: MockReturn20000UniteEnquete
-  - label: launch every UE
-    type: MultipleSubWorkflow
-    payloadTemplate: |
-      {
-        "contexts": ${JSON(context.previousResult)},
-        "workflowName": "LaunchUE"
-      }
-      
-- name: LaunchUE
-  id: "00000000-0009-0000-0000-000000000000"
-  steps:
-  - label: fetch sample
-    id: "00000000-0009-0000-0000-000000000001"
-    type: ActivitiMessage
-    payloadTemplate: |
-      {
-        "name": "Start_UE",
-        "context": ${JSON(context)}
-      }
-      
-- name: CreateUE
-  id: "00000000-000a-0000-0000-000000000000"
-  steps:
-  - label: fetch sample
-    id: "00000000-000a-0000-0000-000000000001"
-    type: Print
-    payloadTemplate: ${context}
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
