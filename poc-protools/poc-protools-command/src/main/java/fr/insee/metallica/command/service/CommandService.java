@@ -151,6 +151,12 @@ public class CommandService {
 		command.setStatus(Status.Error);
 		command.setResult(message);
 		command = commandRepository.save(command);
+		if (command.getResultFetcher() != null) {
+			command.getResultFetcher().setStatus(Status.Error);
+			commandRepository.save(command.getResultFetcher());
+		} else {
+			command.setStatus(Status.Done);
+		}
 		publish(Type.Error, command, message);
 		commandListeners.remove(command.getId());
 		return command;
