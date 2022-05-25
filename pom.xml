@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.insee.metallica</groupId>
+	<artifactId>poc-protools-with-mock-reactor</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>poc-protools-with-mock-reactor</name>
+	<description>Poc for protools reactor</description>
+
+	<modules>
+		<module>poc-outbox-library</module>
+		<module>poc-password-generator</module>
+		<module>poc-password-mail-sender</module>
+		<module>poc-protools</module>
+	</modules>
+</project>
