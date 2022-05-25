@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox.domain;
+package fr.insee.metallica.outbox.domain;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
@@ -20,7 +19,6 @@ public class OutboxCommand {
 	@Column(columnDefinition = "UUID")
 	private UUID id;
 	
-	@NotNull
 	private LocalDateTime lastHeartBeat;
 	
 	private boolean completed;

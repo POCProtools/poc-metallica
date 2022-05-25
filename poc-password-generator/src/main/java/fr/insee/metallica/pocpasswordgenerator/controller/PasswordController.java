@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insee.metallica.outbox.aspect.TransactionalCommand;
 import fr.insee.metallica.pocpasswordgenerator.domain.PasswordHash;
 import fr.insee.metallica.pocpasswordgenerator.networkmesser.NetworkMesser;
-import fr.insee.metallica.pocpasswordgenerator.outbox.aspect.TransactionalCommand;
 import fr.insee.metallica.pocpasswordgenerator.service.PasswordHashService;
 
 @RestController

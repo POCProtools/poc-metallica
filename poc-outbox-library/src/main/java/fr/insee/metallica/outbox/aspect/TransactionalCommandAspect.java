@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox.aspect;
+package fr.insee.metallica.outbox.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import fr.insee.metallica.pocpasswordgenerator.outbox.OutboxCommandService;
+import fr.insee.metallica.outbox.OutboxCommandService;
 
 @Aspect
 @Component

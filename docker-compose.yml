@@ -1,7 +1,9 @@
 version: "3.9"  # optional since v1.27.0
 services:
   password-generator:
-    build: ./poc-password-generator
+    build: 
+      context: ./
+      dockerfile: Dockerfile.passwordgenerator
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=compose
       - DATA_FOLDER=/data/password-generator
@@ -12,7 +14,9 @@ services:
     links:
       - "db"
   password-mail-sender:
-    build: ./poc-password-mail-sender
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile.mailsender
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=compose
       - DATA_FOLDER=/data

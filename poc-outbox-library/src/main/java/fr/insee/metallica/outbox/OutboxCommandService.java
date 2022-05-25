@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox;
+package fr.insee.metallica.outbox;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.metallica.pocpasswordgenerator.outbox.domain.OutboxCommandRepository;
+import fr.insee.metallica.outbox.domain.OutboxCommandRepository;
 
 @Service
 public class OutboxCommandService {

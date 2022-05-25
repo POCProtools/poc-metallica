@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox;
+package fr.insee.metallica.outbox;
 
 import java.util.UUID;
 
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import fr.insee.metallica.pocpasswordgenerator.outbox.domain.OutboxCommand;
-import fr.insee.metallica.pocpasswordgenerator.outbox.domain.OutboxCommandRepository;
+import fr.insee.metallica.outbox.domain.OutboxCommand;
+import fr.insee.metallica.outbox.domain.OutboxCommandRepository;
 
 @RestController
 @RequestMapping("/command")

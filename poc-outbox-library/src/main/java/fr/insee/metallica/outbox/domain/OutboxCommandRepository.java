@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox.domain;
+package fr.insee.metallica.outbox.domain;
 
 import java.time.LocalDateTime;
 import java.util.List;

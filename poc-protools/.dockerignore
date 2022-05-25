@@ -1,0 +1,6 @@
+runtime
+.git
+.github
+**/target
+**/.mvn
+**/bpmn-editor

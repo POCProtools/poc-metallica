@@ -1,4 +1,4 @@
-package fr.insee.metallica.pocpasswordgenerator.outbox.aspect;
+package fr.insee.metallica.outbox.aspect;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
