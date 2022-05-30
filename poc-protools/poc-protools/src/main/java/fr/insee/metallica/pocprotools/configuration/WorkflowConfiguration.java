@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.activiti.api.process.runtime.connector.Connector;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.runtime.Execution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,45 +49,30 @@ public class WorkflowConfiguration {
 	 */
 	@Autowired
 	public void subscribe(WorkflowEngine engine, RuntimeService runtimeService, ObjectMapper mapper) {
-		engine.subscribe((workflow, step, message) -> {
-			try {
-				var execution = getExecution(runtimeService, mapper, workflow);
-				if (execution == null) return;
-				
-				runtimeService.signalEventReceived("Error", execution.getId(), Map.of("error", message));
-			} catch (JsonProcessingException e) {
-				log.error("Cannot deserialize context", e);
-			} catch (Exception e) {
-				log.error("Problem during send event", e);
-			}
-		}, Status.Error);
-		
 		engine.subscribe((workflow, step, result) -> {
 			try {
-				var map = new HashMap<String,Object>();
-				if (result != null) {
-					var objectNode = mapper.readValue(result, JsonNode.class);
-					map.put("workflowResult", objectNode);
-				} else {
-					map.put("workflowResult", null);
-				}
 				var execution = getExecution(runtimeService, mapper, workflow);
 				if (execution == null) return;
 				
-				runtimeService.trigger(execution.getId(), map);
+				var map = new HashMap<String,Object>();
+				map.put("workflowStatus", workflow.getStatus());
+				map.put("workflowResult", result != null ? mapper.readValue(result, JsonNode.class) : null);
+				
+				// runtimeService.trigger(execution.getId(), map);
+				runtimeService.signalEventReceived("GenerateSample");
 			} catch (JsonProcessingException e) {
 				log.error("Cannot deserialize context", e);
 			} catch (Exception e) {
 				log.error("Problem during send event", e);
 			}
-		}, Status.Success);
+		}, Status.Success, Status.Error);
 	}
 
 	private Execution getExecution(RuntimeService runtimeService, ObjectMapper mapper, Workflow workflow)
 			throws JsonProcessingException, JsonMappingException {
 		var context = mapper.readValue(workflow.getContext(), ObjectNode.class);
 		if (context.get("processInstanceId") == null || !context.get("processInstanceId").isTextual()) {
-			log.error("Cannot find processId in workflow context");
+			// this would happened if the workflow was launched by something else than Activiti
 			return null;
 		}
 		if (context.get("activityId") == null || !context.get("activityId").isTextual()) {

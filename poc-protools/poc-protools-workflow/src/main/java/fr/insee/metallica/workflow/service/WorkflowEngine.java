@@ -83,7 +83,7 @@ public class WorkflowEngine {
 				
 				if (command.getStatus() == Command.Status.Error) {
 					step.setStatus(Status.Error);
-					error(step.getWorkflow(), step, (body instanceof String) ? (String) body : mapper.writeValueAsString(body));
+					error(step.getWorkflow(), step, command.getResult());
 				} else if (command.getStatus() == Command.Status.Retry) {
 					step.setStatus(Status.Retry);
 				} else if (command.getStatus() == Command.Status.Processing) {
@@ -167,11 +167,11 @@ public class WorkflowEngine {
 	}
 
 	@Transactional
-	public void error(Workflow workflow, WorkflowStep step, String message) {
+	public void error(Workflow workflow, WorkflowStep step, String serializedResult) {
 		workflow.setStatus(Workflow.Status.Error);
 		this.workflowRepository.save(workflow);
-		log.info("The workflow {} {} ended with an error {}", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId(), message);
-		publish(workflow, step, message);
+		log.info("The workflow {} {} ended with an error {}", workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName(), workflow.getId(), serializedResult);
+		publish(workflow, step, serializedResult);
 	}
 	
 	public void subscribe(UUID workflowId, WorkflowEventListener listener) {

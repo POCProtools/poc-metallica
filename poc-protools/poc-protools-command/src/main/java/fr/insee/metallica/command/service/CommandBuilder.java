@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import fr.insee.metallica.command.domain.Command;
 import fr.insee.metallica.command.domain.Command.Status;
-import fr.insee.metallica.command.service.CommandEventListener.Type;
 
 public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 	private AsyncResultFetcherBuilder asyncResult;
@@ -41,23 +40,7 @@ public class CommandBuilder extends CommandBuilderBase<CommandBuilder> {
 		if (command.getNextScheduledTime() == null)
 			command.setNextScheduledTime(LocalDateTime.now());
 		
-		return this.commandService.transactionTemplate.execute((status) -> {
-			var processor = commandProcessorService.getProcessor(command.getType());
-			if (asyncResult != null) {
-				asyncResult.command.setStatus(Status.WaitingToBeScheduled);
-				this.commandService.commandRepository.save(asyncResult.command);
-				command.setResultFetcher(asyncResult.command);
-			} else if (processor != null && processor.isAsynchronousResult()) {
-				var asyncResultCommand = processor.getAsyncResultCommand(command); 
-				asyncResultCommand.setStatus(Status.WaitingToBeScheduled);
-				this.commandService.commandRepository.save(asyncResultCommand);
-				command.setResultFetcher(asyncResultCommand);
-			}
-			
-			command = this.commandService.commandRepository.save(command);
-			this.commandService.publish(Type.Added,command, null);
-			return command;
-		});
+		return this.commandService.executeInTransaction(command, asyncResult == null ? null : asyncResult.build());
 	}
 
 	public Command saveNoSend() {

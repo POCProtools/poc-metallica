@@ -35,10 +35,10 @@ public class CommandService {
 	CommandProcessorService commandProcessorService;
 
 	@Autowired 
-	ObjectMapper mapper;
-	
-	@Autowired 
 	TransactionTemplate transactionTemplate;
+
+	@Autowired 
+	ObjectMapper mapper;
 	
 	private final Map<Type, List<CommandEventListener>> listeners = new HashMap<>();
 	
@@ -149,13 +149,17 @@ public class CommandService {
 	public Command error(Command command, String message) {
 		command = commandRepository.getById(command.getId());
 		command.setStatus(Status.Error);
-		command.setResult(message);
+		try {
+			command.setResult(mapper.writeValueAsString(message));
+		} catch (JsonProcessingException e) {
+			command.setResult("\"Could not serialize error message\"");
+		}
 		command = commandRepository.save(command);
 		if (command.getResultFetcher() != null) {
 			command.getResultFetcher().setStatus(Status.Error);
 			commandRepository.save(command.getResultFetcher());
 		} else {
-			command.setStatus(Status.Done);
+			command.setStatus(Status.Error);
 		}
 		publish(Type.Error, command, message);
 		commandListeners.remove(command.getId());
@@ -166,7 +170,11 @@ public class CommandService {
 	public Command retry(Command command, String message, int delayInSeconds) {
 		command = commandRepository.getById(command.getId());
 		command.setStatus(Status.Retry);
-		command.setResult(message);
+		try {
+			command.setResult(mapper.writeValueAsString(message));
+		} catch (JsonProcessingException e) {
+			command.setResult("\"Could not serialize retry error message\"");
+		}
 		command.setNbTry(command.getNbTry() + 1);
 		command.setNextScheduledTime(LocalDateTime.now().plusSeconds(delayInSeconds));
 		command = commandRepository.save(command);
@@ -213,6 +221,26 @@ public class CommandService {
 			public void afterCommit() {
 				action.run();
 			}
+		});
+	}
+
+	public Command executeInTransaction(Command command, Command asyncResult) {
+		return transactionTemplate.execute((status) -> {
+			var processor = commandProcessorService.getProcessor(command.getType());
+			if (asyncResult != null) {
+				asyncResult.setStatus(Status.WaitingToBeScheduled);
+				commandRepository.save(asyncResult);
+				command.setResultFetcher(asyncResult);
+			} else if (processor != null && processor.isAsynchronousResult()) {
+				var asyncResultCommand = processor.getAsyncResultCommand(command); 
+				asyncResultCommand.setStatus(Status.WaitingToBeScheduled);
+				commandRepository.save(asyncResultCommand);
+				command.setResultFetcher(asyncResultCommand);
+			}
+			
+			var c = commandRepository.save(command);
+			publish(Type.Added,c, null);
+			return c;
 		});
 	}
 }
