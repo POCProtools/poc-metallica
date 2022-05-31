@@ -19,7 +19,8 @@ feign:
         connectTimeout: 20000
         readTimeout: 20000
         loggerLevel: basic
-               
+            
+# logging.level.org.activiti: DEBUG
 
 files:
   mail-sender-files: ../../runtime/password-mail-sender/mail-body.log

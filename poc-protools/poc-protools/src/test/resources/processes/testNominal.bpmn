@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" targetNamespace="http://www.activiti.org/test">
+  <process id="MainTest" name="My process" isExecutable="true">
+    <startEvent id="startevent1" name="Start" />
+    <serviceTask id="TestNominal" name="TestNominal" implementation="TestNominal" activiti:async="true" />
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="TestNominal" />
+    <endEvent id="endevent1" name="End" />
+    <sequenceFlow id="flow2" sourceRef="TestNominal" targetRef="endevent1" />
+    <boundaryEvent id="Event_0dfbpsr" attachedToRef="TestNominal">
+      <outgoing>Flow_19icm3x</outgoing>
+      <errorEventDefinition id="ErrorEventDefinition_12tk9ee" />
+    </boundaryEvent>
+    <sequenceFlow id="Flow_19icm3x" sourceRef="Event_0dfbpsr" targetRef="Event_1ci1ft9" />
+    <endEvent id="Event_1ci1ft9">
+      <incoming>Flow_19icm3x</incoming>
+      <terminateEventDefinition id="TerminateEventDefinition_0s62ubt" />
+    </endEvent>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_testProcess">
+    <bpmndi:BPMNPlane id="BPMNPlane_testProcess" bpmnElement="MainTest">
+      <bpmndi:BPMNEdge id="BPMNEdge_flow2" bpmnElement="flow2">
+        <omgdi:waypoint x="305" y="217" />
+        <omgdi:waypoint x="360" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow1" bpmnElement="flow1">
+        <omgdi:waypoint x="155" y="217" />
+        <omgdi:waypoint x="200" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19icm3x_di" bpmnElement="Flow_19icm3x">
+        <omgdi:waypoint x="253" y="263" />
+        <omgdi:waypoint x="253" y="330" />
+        <omgdi:waypoint x="360" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_startevent1" bpmnElement="startevent1">
+        <omgdc:Bounds x="120" y="200" width="35" height="35" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Echo" bpmnElement="TestNominal">
+        <omgdc:Bounds x="200" y="190" width="105" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_endevent1" bpmnElement="endevent1">
+        <omgdc:Bounds x="360" y="200" width="35" height="35" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1y10iw9_di" bpmnElement="Event_1ci1ft9">
+        <omgdc:Bounds x="360" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dvw104_di" bpmnElement="Event_0dfbpsr">
+        <omgdc:Bounds x="235" y="227" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -2,16 +2,21 @@ package fr.insee.metallica.pocprotools.configuration;
 
 import static org.activiti.runtime.api.impl.MappingExecutionContext.buildMappingExecutionContext;
 
+import java.util.List;
+
 import org.activiti.api.process.model.IntegrationContext;
 import org.activiti.api.process.runtime.connector.Connector;
 import org.activiti.bpmn.model.ServiceTask;
 import org.activiti.engine.delegate.DelegateExecution;
+import org.activiti.engine.impl.bpmn.helper.ErrorPropagation;
 import org.activiti.runtime.api.connector.DefaultServiceTaskBehavior;
 import org.activiti.runtime.api.connector.IntegrationContextBuilder;
 import org.activiti.runtime.api.impl.VariablesMappingProvider;
 import org.springframework.context.ApplicationContext;
 
 import fr.insee.metallica.pocprotools.connector.AbstractStartWorkflow;
+import fr.insee.metallica.workflow.domain.Workflow;
+import fr.insee.metallica.workflow.domain.Workflow.Status;
 
 public class ProtoolsDefaultServiceTaskBehavior extends DefaultServiceTaskBehavior {
 	private static final long serialVersionUID = 1L;
@@ -36,7 +41,9 @@ public class ProtoolsDefaultServiceTaskBehavior extends DefaultServiceTaskBehavi
     @Override
     public void execute(DelegateExecution execution) {
         Connector connector = getConnector(getImplementation(execution));
-        IntegrationContext integrationContext = connector.apply(integrationContextBuilder.from(execution));
+        var integrationContext = integrationContextBuilder.from(execution);
+        integrationContext.getInBoundVariables().put("executionId", execution.getId());
+        integrationContext = connector.apply(integrationContext);
         
         if (!(connector instanceof AbstractStartWorkflow)) {
         	complete(execution, integrationContext);
@@ -49,7 +56,13 @@ public class ProtoolsDefaultServiceTaskBehavior extends DefaultServiceTaskBehavi
         IntegrationContext integrationContext = integrationContextBuilder.from(execution);
         
         if (connector instanceof AbstractStartWorkflow) {
-        	complete(execution, integrationContext);
+        	var status = (Workflow.Status) integrationContext.getInBoundVariables().getOrDefault(getImplementation(execution) + "Status", null);
+        	if (status == Status.Error) {
+        		System.out.println("Propagation error");
+        		ErrorPropagation.propagateError("error", execution);
+        	} else {
+        		complete(execution, integrationContext);
+        	}
         } else {
         	super.trigger(execution, signalName, signalData);
         }

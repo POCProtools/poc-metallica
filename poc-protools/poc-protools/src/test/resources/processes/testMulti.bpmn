@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" targetNamespace="http://www.activiti.org/test">
+  <process id="TestSubWorkflow" name="My process" isExecutable="true">
+    <startEvent id="startevent1" name="Start" />
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="TestNominal" />
+    <endEvent id="endevent1" name="End">
+      <incoming>Flow_1884lie</incoming>
+    </endEvent>
+    <boundaryEvent id="Event_0dfbpsr" attachedToRef="TestNominal">
+      <outgoing>Flow_19icm3x</outgoing>
+      <errorEventDefinition id="ErrorEventDefinition_12tk9ee" />
+    </boundaryEvent>
+    <sequenceFlow id="Flow_19icm3x" sourceRef="Event_0dfbpsr" targetRef="Event_1ci1ft9" />
+    <endEvent id="Event_1ci1ft9">
+      <incoming>Flow_19icm3x</incoming>
+      <incoming>Flow_15kkos5</incoming>
+      <terminateEventDefinition id="TerminateEventDefinition_0s62ubt" />
+    </endEvent>
+    <serviceTask id="TestNominal" name="TestNominal" implementation="TestNominal">
+      <incoming>flow1</incoming>
+      <outgoing>Flow_1vgn85l</outgoing>
+    </serviceTask>
+    <sequenceFlow id="Flow_1vgn85l" sourceRef="TestNominal" targetRef="Activity_019ysvr" />
+    <subProcess id="Activity_019ysvr">
+      <incoming>Flow_1vgn85l</incoming>
+      <outgoing>Flow_1884lie</outgoing>
+      <multiInstanceLoopCharacteristics activiti:collection="${TestNominalResult}" activiti:elementVariable="ue"/>
+      <startEvent id="Event_014izrc">
+        <outgoing>Flow_1arsaya</outgoing>
+      </startEvent>
+      <sequenceFlow id="Flow_1arsaya" sourceRef="Event_014izrc" targetRef="Activity_1cl29oa" />
+      <serviceTask id="Activity_1cl29oa" name="TestSubNominal" implementation="TestSubNominal">
+        <incoming>Flow_1arsaya</incoming>
+        <outgoing>Flow_1h9rc3u</outgoing>
+      </serviceTask>
+      <endEvent id="Event_0s6em4u">
+        <incoming>Flow_1h9rc3u</incoming>
+      </endEvent>
+      <sequenceFlow id="Flow_1h9rc3u" sourceRef="Activity_1cl29oa" targetRef="Event_0s6em4u" />
+      <boundaryEvent id="Event_1yu1d1w" attachedToRef="Activity_1cl29oa">
+        <outgoing>Flow_0ycwfim</outgoing>
+        <errorEventDefinition id="ErrorEventDefinition_066xx4h" />
+      </boundaryEvent>
+      <sequenceFlow id="Flow_0ycwfim" sourceRef="Event_1yu1d1w" targetRef="Event_0efr8md" />
+      <endEvent id="Event_0efr8md">
+        <incoming>Flow_0ycwfim</incoming>
+        <errorEventDefinition id="ErrorEventDefinition_08bjpdo" />
+      </endEvent>
+    </subProcess>
+    <sequenceFlow id="Flow_1884lie" sourceRef="Activity_019ysvr" targetRef="endevent1" />
+    <boundaryEvent id="Event_0nli57w" attachedToRef="Activity_019ysvr">
+      <outgoing>Flow_15kkos5</outgoing>
+      <errorEventDefinition id="ErrorEventDefinition_0bdbj8s" />
+    </boundaryEvent>
+    <sequenceFlow id="Flow_15kkos5" sourceRef="Event_0nli57w" targetRef="Event_1ci1ft9" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_testProcess">
+    <bpmndi:BPMNPlane id="BPMNPlane_testProcess" bpmnElement="TestSubWorkflow">
+      <bpmndi:BPMNEdge id="BPMNEdge_flow1" bpmnElement="flow1">
+        <omgdi:waypoint x="155" y="217" />
+        <omgdi:waypoint x="200" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19icm3x_di" bpmnElement="Flow_19icm3x">
+        <omgdi:waypoint x="253" y="172" />
+        <omgdi:waypoint x="253" y="80" />
+        <omgdi:waypoint x="992" y="80" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vgn85l_di" bpmnElement="Flow_1vgn85l">
+        <omgdi:waypoint x="300" y="230" />
+        <omgdi:waypoint x="380" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1884lie_di" bpmnElement="Flow_1884lie">
+        <omgdi:waypoint x="810" y="230" />
+        <omgdi:waypoint x="992" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15kkos5_di" bpmnElement="Flow_15kkos5">
+        <omgdi:waypoint x="580" y="102" />
+        <omgdi:waypoint x="580" y="80" />
+        <omgdi:waypoint x="992" y="80" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_startevent1" bpmnElement="startevent1">
+        <omgdc:Bounds x="120" y="200" width="35" height="35" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1026cci_di" bpmnElement="TestNominal">
+        <omgdc:Bounds x="200" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_endevent1" bpmnElement="endevent1">
+        <omgdc:Bounds x="992" y="212" width="35" height="35" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1000" y="255" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1y10iw9_di" bpmnElement="Event_1ci1ft9">
+        <omgdc:Bounds x="992" y="62" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ss0b13_di" bpmnElement="Activity_019ysvr" isExpanded="true">
+        <omgdc:Bounds x="380" y="120" width="430" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1arsaya_di" bpmnElement="Flow_1arsaya">
+        <omgdi:waypoint x="438" y="230" />
+        <omgdi:waypoint x="530" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1h9rc3u_di" bpmnElement="Flow_1h9rc3u">
+        <omgdi:waypoint x="630" y="230" />
+        <omgdi:waypoint x="702" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ycwfim_di" bpmnElement="Flow_0ycwfim">
+        <omgdi:waypoint x="580" y="172" />
+        <omgdi:waypoint x="580" y="160" />
+        <omgdi:waypoint x="702" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_014izrc_di" bpmnElement="Event_014izrc">
+        <omgdc:Bounds x="401.6666666666667" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1g603w5_di" bpmnElement="Activity_1cl29oa">
+        <omgdc:Bounds x="530" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0s6em4u_di" bpmnElement="Event_0s6em4u">
+        <omgdc:Bounds x="702" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01nsjdn_di" bpmnElement="Event_0efr8md">
+        <omgdc:Bounds x="702" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_18imr3x_di" bpmnElement="Event_1yu1d1w">
+        <omgdc:Bounds x="562" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dvw104_di" bpmnElement="Event_0dfbpsr">
+        <omgdc:Bounds x="235" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0bhjhor_di" bpmnElement="Event_0nli57w">
+        <omgdc:Bounds x="562" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

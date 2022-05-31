@@ -2,10 +2,10 @@ package fr.insee.metallica.pocprotools.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.activiti.api.process.runtime.connector.Connector;
 import org.activiti.engine.RuntimeService;
-import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.runtime.Execution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,18 +48,24 @@ public class WorkflowConfiguration {
 	 * Start listening to done and error on workflow to notify activiti task 
 	 */
 	@Autowired
-	public void subscribe(WorkflowEngine engine, RuntimeService runtimeService, ObjectMapper mapper) {
+	public void subscribe(WorkflowConfigurationService workflowConfigurationService, WorkflowEngine engine, RuntimeService runtimeService, ObjectMapper mapper) {
 		engine.subscribe((workflow, step, result) -> {
 			try {
 				var execution = getExecution(runtimeService, mapper, workflow);
 				if (execution == null) return;
 				
-				var map = new HashMap<String,Object>();
-				map.put("workflowStatus", workflow.getStatus());
-				map.put("workflowResult", result != null ? mapper.readValue(result, JsonNode.class) : null);
+				var workflowName = workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName();
 				
-				// runtimeService.trigger(execution.getId(), map);
-				runtimeService.signalEventReceived("GenerateSample");
+				var map = new HashMap<String,Object>();
+				map.put(workflowName + "Status", workflow.getStatus());
+				map.put(workflowName + "Result", result != null ? mapper.readValue(result, JsonNode.class) : null);
+				
+				// this is ugly for now it creates a problem with ACID
+				new Thread(() -> {
+					synchronized (engine) {
+						runtimeService.trigger(execution.getId(), map);	
+					}
+				}).start();
 			} catch (JsonProcessingException e) {
 				log.error("Cannot deserialize context", e);
 			} catch (Exception e) {
@@ -79,13 +85,12 @@ public class WorkflowConfiguration {
 			log.error("Cannot find activityId in workflow context");
 			return null;
 		}
-		var processId = context.get("processInstanceId").asText();
-		var activityId = context.get("activityId").asText();
+		var executionId = context.get("executionId").asText();
 		
 		var execution = runtimeService.createExecutionQuery()
-				.activityId(activityId).processInstanceId(processId).singleResult();
+				.executionId(executionId).singleResult();
 		if (execution == null) {
-			log.error("Cannot retrieve execution {} : {}", processId, activityId);
+			log.error("Cannot retrieve execution {}", executionId);
 			return null;
 		}
 		return execution;
