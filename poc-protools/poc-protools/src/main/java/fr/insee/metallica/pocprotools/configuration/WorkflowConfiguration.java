@@ -2,7 +2,6 @@ package fr.insee.metallica.pocprotools.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.activiti.api.process.runtime.connector.Connector;
 import org.activiti.engine.RuntimeService;
@@ -20,7 +19,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import fr.insee.metallica.command.service.CommandService;
 import fr.insee.metallica.pocprotools.connector.AbstractStartWorkflow;
+import fr.insee.metallica.pocprotools.processor.TriggerCommandPayload;
 import fr.insee.metallica.workflow.configuration.descriptor.WorkflowDescriptor;
 import fr.insee.metallica.workflow.domain.Workflow;
 import fr.insee.metallica.workflow.domain.Workflow.Status;
@@ -44,6 +45,9 @@ public class WorkflowConfiguration {
 		return map;
 	}
 	
+	@Autowired
+	private CommandService commandService;
+	
 	/**
 	 * Start listening to done and error on workflow to notify activiti task 
 	 */
@@ -56,16 +60,10 @@ public class WorkflowConfiguration {
 				
 				var workflowName = workflowConfigurationService.getWorkflow(workflow.getWorkflowId()).getName();
 				
-				var map = new HashMap<String,Object>();
-				map.put(workflowName + "Status", workflow.getStatus());
-				map.put(workflowName + "Result", result != null ? mapper.readValue(result, JsonNode.class) : null);
-				
 				// this is ugly for now it creates a problem with ACID
-				new Thread(() -> {
-					synchronized (engine) {
-						runtimeService.trigger(execution.getId(), map);	
-					}
-				}).start();
+				commandService.createCommand("Trigger")
+					.payload(new TriggerCommandPayload(execution.getId(), workflowName, workflow.getStatus(), result != null ? mapper.readValue(result, JsonNode.class) : null))
+					.saveAndSend(1, "trigger");
 			} catch (JsonProcessingException e) {
 				log.error("Cannot deserialize context", e);
 			} catch (Exception e) {

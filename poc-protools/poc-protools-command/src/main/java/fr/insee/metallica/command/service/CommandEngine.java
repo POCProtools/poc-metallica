@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -73,6 +74,7 @@ public class CommandEngine {
 				
 				var result = processor.process(command);
 				commandService.done(command, result, processor.isResultSerialized());
+				rescheduleWaiting(command);
 				
 				log.info("Command executed {}", command.getId());
 			} catch (CommandExecutionAbortException e) {
@@ -92,6 +94,16 @@ public class CommandEngine {
 		}
 	}
 	
+	private void rescheduleWaiting(Command command) {
+		if (command.getConcurrencyLimit() <= 0) return;
+		
+		var page = commandRepository.findByLimitKeyAndStatus(command.getLimitKey(), Status.Retry, PageRequest.of(0, 1));
+		if (page.getNumberOfElements() == 0) {
+			return;
+		}
+		this.startProcess(page.getContent().get(0).getId());
+	}
+
 	private boolean limitReached(Command command) {
 		if (command.getConcurrencyLimit() <= 0) return false;
 		

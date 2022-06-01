@@ -2,8 +2,6 @@ package fr.insee.metallica.pocprotools.configuration;
 
 import static org.activiti.runtime.api.impl.MappingExecutionContext.buildMappingExecutionContext;
 
-import java.util.List;
-
 import org.activiti.api.process.model.IntegrationContext;
 import org.activiti.api.process.runtime.connector.Connector;
 import org.activiti.bpmn.model.ServiceTask;

@@ -27,6 +27,8 @@ public interface CommandRepository extends JpaRepository<Command, UUID>{
 
 	public int countByLimitKeyAndStatus(String limitKey, Status status);
 
+	public Page<Command> findByLimitKeyAndStatus(String limitKey, Status status, Pageable p);
+
 	public default Command getOneCommandToRun() {
 		var page = findPageByStatusInAndNextScheduledTimeLessThanEqualOrderByNextScheduledTimeAsc(List.of(Status.Pending, Status.Retry), LocalDateTime.now(),  PageRequest.of(0, 1));
 		if (page.getNumberOfElements() == 0) {

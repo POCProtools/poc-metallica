@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.activiti.engine.RuntimeService;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +47,9 @@ class ActivityTests {
 	
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private IntegrationTestHelper helper;
 	
 	static boolean initDone = false;
 	static Supplier<?> TestNominal;
@@ -161,10 +163,8 @@ class ActivityTests {
 
 		var instance = runtimeService.startProcessInstanceByKey("TestSubWorkflow");
 		System.out.println(instance.getProcessInstanceId());
-		Thread.sleep(1000);
-		if (!b.get())
-			Thread.sleep(1000);
 		
+		helper.waitFor(3, () -> runtimeService.createExecutionQuery().processInstanceId(instance.getId()).list().isEmpty());
 		assert b.get();
 		assert i.get() == 3;
 		assert runtimeService.createExecutionQuery().processInstanceId(instance.getId()).list().isEmpty();

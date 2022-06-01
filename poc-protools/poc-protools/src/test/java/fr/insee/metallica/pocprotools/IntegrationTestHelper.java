@@ -34,11 +34,11 @@ class IntegrationTestHelper {
 		return true;
 	}
 
-	private static interface TestOnce {
+	public static interface TestOnce {
 		boolean test() throws Throwable;
 	}
 	
-	private void waitFor(int nbSeconds, TestOnce test) throws Throwable {
+	public void waitFor(int nbSeconds, TestOnce test) throws Throwable {
 		for(int i = 0; i < nbSeconds; i++) {
 			if (test.test()) return;
 			Thread.sleep(1000);
