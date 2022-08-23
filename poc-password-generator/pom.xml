@@ -22,10 +22,10 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/POCProtools/poc-metallica</url>
+			<url>https://maven.pkg.github.com/POCProtools/poc-outbox-library</url>
 		</repository>
 	</distributionManagement>
-	<dependencies>
+<dependencies>
 		<dependency>
 			<groupId>fr.insee.metallica</groupId>
 			<artifactId>poc-outbox-library</artifactId>
