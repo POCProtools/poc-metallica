@@ -1,9 +1,9 @@
 version: "3.9"  # optional since v1.27.0
 services:
+  outbox:
+    build: ./poc-outbox-library
   password-generator:
-    build: 
-      context: ./
-      dockerfile: Dockerfile.passwordgenerator
+    build: ./poc-password-generator
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=compose
       - DATA_FOLDER=/data/password-generator
@@ -12,11 +12,11 @@ services:
     volumes:
       - ./runtime/password-generator:/data
     links:
+      - "outbox"
       - "db"
+
   password-mail-sender:
-    build: 
-      context: ./
-      dockerfile: ./Dockerfile.mailsender
+    build: ./poc-password-mail-sender
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=compose
       - DATA_FOLDER=/data
@@ -25,6 +25,7 @@ services:
     volumes:
       - ./runtime/password-mail-sender:/data
     links:
+      - "outbox"
       - "db"
   protools:
     build: ./poc-protools
@@ -38,16 +39,18 @@ services:
     volumes:
       - ./runtime/protools:/data
     links:
+      - "outbox"
       - "db"
       - "password-generator"
       - "password-mail-sender"
+
   db:
-    image: postgres:12-alpine
+    image: postgres:14.5-alpine
     environment:
       - POSTGRES_PASSWORD=secret
       - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
-      - "25432:5432"
+      - "5432:5432"
     volumes:
       - ./runtime/postgres:/var/lib/postgresql/data
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d

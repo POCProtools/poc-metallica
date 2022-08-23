@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="poc-password-generator" />
+        <module name="poc-outbox-library" />
+        <module name="poc-password-mail-sender" />
+        <module name="poc-protools-command" />
+        <module name="poc-protools" />
+        <module name="poc-protools-workflow" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="poc-outbox-library" options="-parameters" />
+      <module name="poc-password-generator" options="-parameters" />
+      <module name="poc-password-mail-sender" options="-parameters" />
+      <module name="poc-protools" options="-parameters" />
+      <module name="poc-protools-command" options="-parameters" />
+      <module name="poc-protools-workflow" options="-parameters" />
+    </option>
+  </component>
+</project>

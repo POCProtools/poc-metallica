@@ -42,18 +42,18 @@ public class StartWorkflowController {
 			this.username = username;
 		}
 	}
-	
+
 	@Autowired
 	private WorkflowExecutionService workflowExecutionService;
-	
+
 	@Autowired
 	private WorkflowStatusService workflowStatusService;
-	
+
 	@PostMapping(path = "/start-workflow")
 	public DeferredResult<ResponseEntity<String>> startWorkflow(@Valid @RequestBody UsernameDto dto) {
 		var result = new DeferredResult<ResponseEntity<String>>();
 		var future = workflowExecutionService.executeWorkflow("GeneratePasswordAndSendMail", dto);
-		future.whenComplete((res, ex) -> 
+		future.whenComplete((res, ex) ->
 			result.setResult(
 				ex != null ?
 				ResponseEntity.internalServerError().body(ex.getMessage()) :
@@ -62,12 +62,12 @@ public class StartWorkflowController {
 		);
 		return result;
 	}
-	
+
 	@PostMapping(path = "/start-workflow-async-mail")
 	public DeferredResult<ResponseEntity<String>> startWorkflowAsyncMail(@Valid @RequestBody UsernameDto dto) {
 		var result = new DeferredResult<ResponseEntity<String>>();
 		var future = workflowExecutionService.executeWorkflow("GeneratePasswordAndSendMailWithAsyncResult", dto);
-		future.whenComplete((res, ex) -> 
+		future.whenComplete((res, ex) ->
 			result.setResult(
 				ex != null ?
 				ResponseEntity.internalServerError().body(ex.getMessage()) :
@@ -76,7 +76,7 @@ public class StartWorkflowController {
 		);
 		return result;
 	}
-	
+
 	@PostMapping(path = "/start-workflow-async")
 	public Workflow startWorkflowAsync(@Valid @RequestBody UsernameDto dto) {
 		try {
@@ -92,7 +92,7 @@ public class StartWorkflowController {
 		return workflowStatusService.getStatus(id);
 	}
 
-	@GetMapping(path = "/workflow")
+	@GetMapping(path = "workflow")
 	@ResponseBody
 	public List<WorkflowStatusDto> getAllStatus() {
 		return workflowStatusService.getAllStatus();
