@@ -12,7 +12,6 @@ services:
     volumes:
       - ./runtime/password-generator:/data
     links:
-      - "outbox"
       - "db"
 
   password-mail-sender:
@@ -25,7 +24,7 @@ services:
     volumes:
       - ./runtime/password-mail-sender:/data
     links:
-      - "outbox"
+
       - "db"
   protools:
     build: ./poc-protools
@@ -39,7 +38,7 @@ services:
     volumes:
       - ./runtime/protools:/data
     links:
-      - "outbox"
+
       - "db"
       - "password-generator"
       - "password-mail-sender"

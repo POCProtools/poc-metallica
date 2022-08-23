@@ -7,22 +7,24 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="poc-password-generator" />
-        <module name="poc-outbox-library" />
         <module name="poc-password-mail-sender" />
         <module name="poc-protools-command" />
         <module name="poc-protools" />
         <module name="poc-protools-workflow" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="poc-outbox-library" target="11" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="poc-outbox-library" options="-parameters" />
       <module name="poc-password-generator" options="-parameters" />
-      <module name="poc-password-mail-sender" options="-parameters" />
-      <module name="poc-protools" options="-parameters" />
-      <module name="poc-protools-command" options="-parameters" />
-      <module name="poc-protools-workflow" options="-parameters" />
+      <module name="poc-password-mail-sender" options="" />
+      <module name="poc-protools" options="" />
+      <module name="poc-protools-command" options="" />
+      <module name="poc-protools-workflow" options="" />
     </option>
   </component>
 </project>
