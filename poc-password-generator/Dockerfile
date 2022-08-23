@@ -7,7 +7,7 @@ COPY ./pom.xml /pwd/
 RUN mvn package -Dspring-boot.repackage.skip=true
 
 COPY ./src /pwd/src
-RUN mvn package -DskipTests=true
+RUN mvn package -DskipTests
 
 FROM openjdk:11-jre-slim
 

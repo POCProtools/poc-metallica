@@ -1,2 +1,5 @@
 ### Runtime ###
 runtime
+
+### Maven ###
+.m2/

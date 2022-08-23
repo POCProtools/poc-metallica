@@ -13,7 +13,7 @@ COPY ./poc-protools/src /pwd/poc-protools/src
 COPY ./poc-protools-command/src /pwd/poc-protools-command/src
 COPY ./poc-protools-workflow/src /pwd/poc-protools-workflow/src
 
-RUN mvn package -DskipTests=true
+RUN mvn package -DskipTests
 
 FROM openjdk:11-jre-slim
 
